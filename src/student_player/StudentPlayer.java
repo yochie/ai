@@ -1,0 +1,103 @@
+package student_player;
+
+import java.util.ArrayList;
+import java.util.Stack;
+
+import hus.HusBoardState;
+import hus.HusMove;
+import hus.HusPlayer;
+import student_player.mytools.MyTools;
+import student_player.mytools.Node;
+import student_player.mytools.StateNode;
+
+/** A Hus player submitted by a student. */
+public class StudentPlayer extends HusPlayer {
+
+    /** You must modify this constructor to return your student number.
+     * This is important, because this is what the code that runs the
+     * competition uses to associate you with your agent.
+     * The constructor should do nothing else. */
+    public StudentPlayer() { super("260585399"); }
+
+    /** This is the primary method that you need to implement.
+     * The ``board_state`` object contains the current state of the game,
+     * which your agent can use to make decisions. See the class hus.RandomHusPlayer
+     * for another example agent. */
+    public HusMove chooseMove(HusBoardState board_state)
+    {
+//    	System.out.println(board_state.getTurnPlayer());
+//    	System.out.println(player_id);
+
+
+        // Get the legal moves for the current board state.
+        ArrayList<HusMove> moves = board_state.getLegalMoves();
+        
+        //create the starting node for our minimax tree
+        StateNode rootNode = new StateNode((HusBoardState) board_state);
+        rootNode.setMyturn(true);
+        rootNode.setDepth(0);
+        
+        //create stack we'll use to do DFS
+        Stack<StateNode> stateStack = new Stack<StateNode>();
+        
+        //add root node to stack
+        stateStack.push(rootNode);
+        
+        StateNode currentNode = null;
+                
+        while (!stateStack.isEmpty()){ 
+        	currentNode = stateStack.pop();
+        	
+        	if (currentNode.getDepth() > 2){
+        		currentNode.setLeaf(true);
+        		MyTools.evaluateUtility(currentNode, player_id, opponent_id);
+        		System.out.println(currentNode.getEvaluation());
+        		continue;
+    		}
+        	
+        	moves = currentNode.getState().getLegalMoves();
+//        	for (HusMove m: moves){
+//        		System.out.println(m.toPrettyString());
+//        	}
+        	
+        	StateNode newNode = null;
+        	
+	        //for each possible move
+	        for (HusMove m : moves){
+	        	
+	        	//create state copy
+	        	HusBoardState newState = (HusBoardState) currentNode.getState().clone();
+	        	
+	        	//do move on that copy
+	        	newState.move(m);
+	        	
+	        	//add new state as child in tree
+	        	newNode = new StateNode(currentNode, newState);
+	        	newNode.setDepth(currentNode.getDepth()+1);
+	        	newNode.setMyturn(!currentNode.isMyturn());
+	        	newNode.setMoveFromParent(m);
+	        	currentNode.addChild(newNode);
+	        	
+	        	stateStack.push(newNode);
+	        	//add to stack
+	        }
+	        
+        }
+        int bestYet = Integer.MIN_VALUE;
+        StateNode bestNode = null;
+		
+        for (Node<HusBoardState> child : rootNode.getChildren())
+        {
+        	int current = MyTools.evaluateUtility((StateNode) child, player_id, opponent_id);
+        	if ( current > bestYet){
+				bestYet = current;
+				bestNode = (StateNode)child;
+			}
+        }
+        System.out.println("Best move has evaluation : " + bestYet);
+		return bestNode.getMoveFromParent();
+		
+
+    }
+
+}
