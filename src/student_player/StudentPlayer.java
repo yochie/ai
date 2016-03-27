@@ -48,14 +48,15 @@ public class StudentPlayer extends HusPlayer {
         while (!stateStack.isEmpty()){ 
         	currentNode = stateStack.pop();
         	
-        	if (currentNode.getDepth() > 2){
+        	moves = currentNode.getState().getLegalMoves();
+
+        	if (currentNode.getDepth() > 3){
         		currentNode.setLeaf(true);
         		MyTools.evaluateUtility(currentNode, player_id, opponent_id);
-        		System.out.println(currentNode.getEvaluation());
+        		//System.out.println(currentNode.getEvaluation());
         		continue;
     		}
         	
-        	moves = currentNode.getState().getLegalMoves();
 //        	for (HusMove m: moves){
 //        		System.out.println(m.toPrettyString());
 //        	}
@@ -85,7 +86,13 @@ public class StudentPlayer extends HusPlayer {
         }
         int bestYet = Integer.MIN_VALUE;
         StateNode bestNode = null;
-		
+        
+//    	for (Node<HusBoardState> child : rootNode.getChildren()){
+//    		if (child.getChildren().isEmpty())
+//    		{
+//    			System.out.println("blalba");
+//    		}
+//    	}		
         for (Node<HusBoardState> child : rootNode.getChildren())
         {
         	int current = MyTools.evaluateUtility((StateNode) child, player_id, opponent_id);

@@ -43,9 +43,9 @@ public class StateNode extends Node<HusBoardState> implements Cloneable{
 		Node<HusBoardState> clone;
 		clone = super.clone();
 		clone.setState((HusBoardState)clone.getState());
-		if (clone.parent != null){
-			clone.setParent(clone.getParent());
-		}
+//		if (clone.parent != null){
+//			clone.setParent(clone.getParent());
+//		}
 		
 		ArrayList<Node<HusBoardState>> newchildren = new ArrayList<Node<HusBoardState>>(); 
 		for (Node<HusBoardState> n : clone.getChildren()){
