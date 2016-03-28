@@ -13,11 +13,13 @@ public class MyTools {
     }
     
 	public static float evaluateUtility(StateNode node, int player_id, int opponent_id, float[] weights) {
+		//check if node was already evaluated, if so just return that eval
+		if (node.isEvaluated()){
+			return node.getEvaluation();
+		}
+		
 		//calculate evaluation using heuristic
 		if (node.isLeaf()){
-			if (node.isEvaluated()){
-				return node.getEvaluation();
-			}
 			
 			ArrayList<Integer> heuristics = new ArrayList<Integer>();
 			
@@ -35,8 +37,8 @@ public class MyTools {
 			heuristics.add(h1);
 			
 			//Second heurisitc:
-			
 			//...
+			
 			//Compute evaluation given weights
 			float evaluation = 0;
 			int counter = 0;
@@ -62,6 +64,7 @@ public class MyTools {
 				}
 			}
 			node.setEvaluation(bestYet);
+			node.setEvaluated(true);
 			return bestYet;
 		}
 		//MIN level node
@@ -76,13 +79,14 @@ public class MyTools {
 				}
 			}
 			node.setEvaluation(bestYet);
+			node.setEvaluated(true);
 			return bestYet;
 		}
 	}
 
-	private static int sum(int[] my_pits) {
+	private static int sum(int[] pits) {
 		int total = 0;
-		for (int pit : my_pits)
+		for (int pit : pits)
 		{
 			total+= pit;
 		}
