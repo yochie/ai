@@ -78,6 +78,8 @@ public class StudentPlayer extends HusPlayer {
 	        }
 	        
         }
+        
+        //Choose the best move to take from current state
         float bestYet = -Float.MAX_VALUE;
         StateNode bestNode = null;
         
