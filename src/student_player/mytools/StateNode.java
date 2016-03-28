@@ -36,24 +36,6 @@ public class StateNode extends Node<HusBoardState> implements Cloneable{
 	public StateNode(HusBoardState state){
 		this.setState((HusBoardState)state);
 	}
-	
-	
-	@Override
-	public Node<HusBoardState> clone() {
-		Node<HusBoardState> clone;
-		clone = super.clone();
-		clone.setState((HusBoardState)clone.getState());
-//		if (clone.parent != null){
-//			clone.setParent(clone.getParent());
-//		}
-		
-		ArrayList<Node<HusBoardState>> newchildren = new ArrayList<Node<HusBoardState>>(); 
-		for (Node<HusBoardState> n : clone.getChildren()){
-			newchildren.add(n);
-		}
-		clone.children = newchildren;
-		return clone;
-	}
 
 	@Override
 	public HusBoardState getState() {

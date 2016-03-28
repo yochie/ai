@@ -1,10 +1,8 @@
 package student_player.mytools;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
-public abstract class Node<T> implements Cloneable{
+public abstract class Node<T>{
 	protected T state;
 	protected Node<T> parent;
 	protected ArrayList<Node<T>> children = new ArrayList<Node<T>>();
@@ -28,18 +26,5 @@ public abstract class Node<T> implements Cloneable{
 	public abstract T getState();
 	
 	public abstract void setState(T state);
-	
-	@SuppressWarnings("unchecked")
-	public Node<T> clone(){
-		try{
-			Node<T> c = (Node<T>) super.clone();
-			return c;
-		}
-		catch(CloneNotSupportedException e)
-		{
-			
-			return null;
-		}
-	}
 
 }

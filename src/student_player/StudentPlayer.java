@@ -56,11 +56,6 @@ public class StudentPlayer extends HusPlayer {
         		//System.out.println(currentNode.getEvaluation());
         		continue;
     		}
-        	
-//        	for (HusMove m: moves){
-//        		System.out.println(m.toPrettyString());
-//        	}
-        	
         	StateNode newNode = null;
         	
 	        //for each possible move
@@ -87,12 +82,6 @@ public class StudentPlayer extends HusPlayer {
         int bestYet = Integer.MIN_VALUE;
         StateNode bestNode = null;
         
-//    	for (Node<HusBoardState> child : rootNode.getChildren()){
-//    		if (child.getChildren().isEmpty())
-//    		{
-//    			System.out.println("blalba");
-//    		}
-//    	}		
         for (Node<HusBoardState> child : rootNode.getChildren())
         {
         	int current = MyTools.evaluateUtility((StateNode) child, player_id, opponent_id);
