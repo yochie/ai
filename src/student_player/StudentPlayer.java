@@ -37,7 +37,7 @@ public class StudentPlayer extends HusPlayer {
         rootNode.setMyturn(true);
         rootNode.setDepth(0);
         
-        //create stack we'll use to do DFS
+        //create stack we'll use to do DFS on move space
         Stack<StateNode> stateStack = new Stack<StateNode>();
         
         //add root node to stack
@@ -45,14 +45,17 @@ public class StudentPlayer extends HusPlayer {
         
         StateNode currentNode = null;
                 
-        while (!stateStack.isEmpty()){ 
+        while (!stateStack.isEmpty()){
+        	//get top node from stack
         	currentNode = stateStack.pop();
         	
+        	//get legal moves for its state
         	moves = currentNode.getState().getLegalMoves();
 
+        	//if its depth is 4 or more, we'll stop here and calculate its utility based on our heuristic
         	if (currentNode.getDepth() > 3){
         		currentNode.setLeaf(true);
-        		MyTools.evaluateUtility(currentNode, player_id, opponent_id);
+        		MyTools.evaluateUtility(currentNode, player_id, opponent_id, MyTools.WEIGHTS);
         		//System.out.println(currentNode.getEvaluation());
         		continue;
     		}
@@ -79,12 +82,12 @@ public class StudentPlayer extends HusPlayer {
 	        }
 	        
         }
-        int bestYet = Integer.MIN_VALUE;
+        float bestYet = -Float.MAX_VALUE;
         StateNode bestNode = null;
         
         for (Node<HusBoardState> child : rootNode.getChildren())
         {
-        	int current = MyTools.evaluateUtility((StateNode) child, player_id, opponent_id);
+        	float current = MyTools.evaluateUtility((StateNode) child, player_id, opponent_id, MyTools.WEIGHTS);
         	if ( current > bestYet){
 				bestYet = current;
 				bestNode = (StateNode)child;
