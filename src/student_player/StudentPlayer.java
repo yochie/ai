@@ -25,10 +25,6 @@ public class StudentPlayer extends HusPlayer {
      * for another example agent. */
     public HusMove chooseMove(HusBoardState board_state)
     {
-//    	System.out.println(board_state.getTurnPlayer());
-//    	System.out.println(player_id);
-
-
         // Get the legal moves for the current board state.
         ArrayList<HusMove> moves = board_state.getLegalMoves();
         

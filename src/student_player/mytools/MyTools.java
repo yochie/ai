@@ -13,8 +13,11 @@ public class MyTools {
     }
     
 	public static float evaluateUtility(StateNode node, int player_id, int opponent_id, float[] weights) {
-	// Get the contents of the pits so we can use it to make decisions.
+		//calculate evaluation using heuristic
 		if (node.isLeaf()){
+			if (node.isEvaluated()){
+				return node.getEvaluation();
+			}
 			
 			ArrayList<Integer> heuristics = new ArrayList<Integer>();
 			
@@ -43,10 +46,11 @@ public class MyTools {
 				counter++;
 			}
 			
-			
 			node.setEvaluation(evaluation);
+			node.setEvaluated(true);
 			return evaluation;
 		}
+		//MAX level node
 		else if (node.isMyturn())
 		{
 			float bestYet = -Float.MAX_VALUE;
@@ -60,10 +64,11 @@ public class MyTools {
 			node.setEvaluation(bestYet);
 			return bestYet;
 		}
+		//MIN level node
 		else
 		{
 			float bestYet = Float.MAX_VALUE;
-			//choose max of children evaluations
+			//choose min of children evaluations
 			for (Node<HusBoardState> child : node.getChildren()){
 				float current = evaluateUtility((StateNode) child, player_id, opponent_id, weights);
 				if ( current < bestYet){
