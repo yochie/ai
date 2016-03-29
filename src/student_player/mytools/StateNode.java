@@ -6,7 +6,7 @@ import hus.HusBoardState;
 import hus.HusMove;
 
 public class StateNode extends Node<HusBoardState> implements Cloneable{
-	private float evaluation;
+	private Double evaluation;
 	private boolean evaluated = false;
 	private int depth = -1;
 	private boolean myturn;
@@ -49,12 +49,12 @@ public class StateNode extends Node<HusBoardState> implements Cloneable{
 	}
 
 
-	public float getEvaluation() {
+	public Double getEvaluation() {
 		return evaluation;
 	}
 
 
-	public void setEvaluation(float evaluation) {
+	public void setEvaluation(Double evaluation) {
 		this.evaluation = evaluation;
 	}
 

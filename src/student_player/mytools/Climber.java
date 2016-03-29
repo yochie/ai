@@ -1,8 +1,6 @@
 package student_player.mytools;
 
-import static java.nio.file.StandardOpenOption.*;
-import java.nio.file.*;
-import java.io.*;
+import java.util.Arrays;
 
 public class Climber {
 	//defines how many times the algorithm will iterate if no change in evaluation is made that is superior to minDiff
@@ -17,97 +15,79 @@ public class Climber {
 	//factor to multiply temperature by at each iteration
 	private static double alpha = 0.85;
 	
-	public static void execute()
+	private static int min_range = 0;
+	
+	//these two have to be evenly divisible
+	private static int max_range = 10;
+	private static int numStartingPos = 5;
+
+	
+	public static void execute(Function fn)
 	{
 		double stepsize = 0.01;
-		Answer[][] tableOutput = new Answer[11][10]; 
+		Answer[][][][] tableOutput = new Answer[numStartingPos][numStartingPos][numStartingPos][10]; 
 		Answer result;
 		
 		//Iterate some Hill climbing algorithms
 		for (int i = 0; i < 10; i++) {
-			for (int x = 0; x < 11; x++) {
-				result = climb((double) x, stepsize, 0);
-				tableOutput[x][i] = result;
-			} 
+			for (double x1 = min_range; x1 < max_range; x1+= (max_range - min_range)/numStartingPos) {
+				for (double x2 = min_range; x2 < max_range; x2+= (max_range - min_range)/numStartingPos) {
+					for (double x3 = min_range; x3 < max_range; x3+= (max_range - min_range)/numStartingPos) {
+						result = climb(fn, new Double[] {x1, x2, x3}, stepsize, 0);
+						tableOutput[(int) x1/((max_range - min_range)/numStartingPos)][(int) x2/((max_range - min_range)/numStartingPos)][(int) x3/((max_range - min_range)/numStartingPos)][i] = result;
+					} 
+				}
+			}
 			stepsize += 0.01;
 		}
 		
 		//Save output to file for better viewing
-		String header =  "X,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.1\n";
-		createCSV(tableOutput, "hillclimbing.csv", header);		
+		//String header =  "X,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.1\n";
+		//createCSV(tableOutput, "hillclimbing.csv", header);		
 		
-		//Since 0.1 was the best stepsize when taking into account the number of iterations required to achieve answer,
 		//only use this stepsize for simulated annealing
 		stepsize = 0.10;
 		
 		//Iterate for Simulated annealing
-		tableOutput = new Answer[11][3];
-		
+		 tableOutput = new Answer[numStartingPos][numStartingPos][numStartingPos][3]; 
+		 
 		//for initial temp between 10 and 100
 		for (int i = 1; i <= 3; i ++)
 		{
 			//for alpha = 0.95, 0.9 and 0.85
 			for (int j = 0; j < 3; j++) 
 			{
-				//for x between 0 and 10
-				for (int x = 0; x < 11; x++) {
-					result = annealClimb((double) x, stepsize, 0, initNumPatienceTokens, startTemp * i, alpha + (j*0.05));
-					tableOutput[x][j] = result;
-		
+				for (double x1 = min_range; x1 < max_range; x1+= (max_range - min_range)/numStartingPos) {
+					for (double x2 = min_range; x2 < max_range; x2+= (max_range - min_range)/numStartingPos) {
+						for (double x3 = min_range; x3 < max_range; x3+= (max_range - min_range)/numStartingPos) {
+							result = annealClimb(fn, new Double[] {x1, x2, x3}, stepsize, 0, initNumPatienceTokens, startTemp * i, alpha + (j*0.05));
+							tableOutput[(int) x1][(int) x2][(int) x3][i] = result;
+						}
+					}
 				}
 			}
 			
-			header =  "T_0 = " + startTemp * i + ",Alpha\nX,0.85, 0.90, 0.95\n";
-			//Save output to file for better viewing
-			createCSV(tableOutput, "simulated_annealing.csv", header);
+//			//Save output to file for better viewing
+//			header =  "T_0 = " + startTemp * i + ",Alpha\nX,0.85, 0.90, 0.95\n";
+//			createCSV(tableOutput, "simulated_annealing.csv", header);
 		}
 	}
-
 	
-	private static double fn (double x)
+	private static Answer annealClimb(Function fn, Double x[], double stepsize, int iteration, int patienceTokens, double temp, double tReductionFactor)
 	{
-		//return the lowest possible value if x = 0, since function is undefined for this value
-		//this ensures we will consider it as an undesirable stopping point
-		if (x == 0) {return -Integer.MAX_VALUE;}
-		double y = (Math.sin((x*x)/2))/Math.sqrt(x);
-		return y;
-	}
-	
-	private static Answer annealClimb(double x, double stepsize, int iteration, int patienceTokens, double temp, double tReductionFactor)
-	{
-		double currentEval = fn(x);
+		double currentEval = fn.evaluate(x);
 		iteration++;
 		double leftEval;
 		double rightEval;
 		
 		if (patienceTokens == 0) {return new Answer(x, currentEval, iteration);}
 		
+		//roll dice to decide which which parameter to change
+		double rand_1 = Math.random() * 100;
+		int paramToChange = (int) (rand_1 / (100.0/x.length));
+
 		double leftX;
 		double rightX;
-		
-		//Make sure we stay within bounds
-		if (x - stepsize >= 0)
-		{
-			leftX = x - stepsize;
-			leftEval = fn(x - stepsize);
-		}
-		else
-		{
-			leftX = x;
-			leftEval = currentEval;
-		}
-		
-		if (x + stepsize <= 10)
-		{
-			rightX = x + stepsize;
-			rightEval = fn(x + stepsize);
-			
-		}
-		else
-		{
-			rightX = x;
-			rightEval = currentEval;
-		}
 		
 		//roll dice to decide which way to go
 		double rand = Math.random() * 100;
@@ -115,7 +95,12 @@ public class Climber {
 		//use left neighbour
 		if (rand < 50){
 			
-			double newX = leftX;
+			leftX = calculateStep(false,x[paramToChange], stepsize);
+			Double[] newX = Arrays.copyOf(x, x.length);
+			
+			newX[paramToChange] = leftX;
+			
+			leftEval = fn.evaluate(newX);
 			
 			double deltaT = leftEval - currentEval;
 			
@@ -130,18 +115,18 @@ public class Climber {
 					//if difference is enough, refresh patience
 					if (deltaT > minDiff)
 					{
-						return annealClimb(newX, stepsize, iteration, initNumPatienceTokens, temp * tReductionFactor, tReductionFactor);
+						return annealClimb(fn, newX, stepsize, iteration, initNumPatienceTokens, temp * tReductionFactor, tReductionFactor);
 					}
 					//otherwise reduce patience by 1
 					else
 					{
-						return annealClimb(newX, stepsize, iteration, patienceTokens - 1, temp * tReductionFactor, tReductionFactor);
+						return annealClimb(fn, newX, stepsize, iteration, patienceTokens - 1, temp * tReductionFactor, tReductionFactor);
 					}
 				}
 				//Stay here, repeat algorithm and reduce patience
 				else
 				{
-					return annealClimb(x, stepsize, iteration, patienceTokens - 1, temp * tReductionFactor, tReductionFactor);
+					return annealClimb(fn, x, stepsize, iteration, patienceTokens - 1, temp * tReductionFactor, tReductionFactor);
 				}
 				
 			}
@@ -150,19 +135,26 @@ public class Climber {
 				//if difference is enough, refresh patience
 				if (deltaT > minDiff)
 				{
-					return annealClimb(newX, stepsize, iteration, initNumPatienceTokens, temp * tReductionFactor, tReductionFactor);
+					return annealClimb(fn, newX, stepsize, iteration, initNumPatienceTokens, temp * tReductionFactor, tReductionFactor);
 				}
 				//otherwise reduce patience by 1
 				else
 				{
-					return annealClimb(newX, stepsize, iteration, patienceTokens - 1, temp * tReductionFactor, tReductionFactor);
+					return annealClimb(fn, newX, stepsize, iteration, patienceTokens - 1, temp * tReductionFactor, tReductionFactor);
 				}
 			}
 		}
 		//use right neighbour
-		else {
+		else {	
+			
+			rightX = calculateStep(true,x[paramToChange], stepsize);
+			Double[] newX = Arrays.copyOf(x, x.length);
+		
+			newX[paramToChange] = rightX;
+		
+			rightEval = fn.evaluate(newX);
+			
 			double deltaT = rightEval - currentEval;
-			double newX = rightX;
 			
 			//if not an improvement
 			if (deltaT < 0) {
@@ -175,18 +167,18 @@ public class Climber {
 					//if difference is enough, refresh patience
 					if (deltaT > minDiff)
 					{
-						return annealClimb(newX, stepsize, iteration, initNumPatienceTokens, temp * tReductionFactor, tReductionFactor);
+						return annealClimb(fn, newX, stepsize, iteration, initNumPatienceTokens, temp * tReductionFactor, tReductionFactor);
 					}
 					//otherwise reduce patience by 1
 					else
 					{
-						return annealClimb(newX, stepsize, iteration, patienceTokens - 1, temp * tReductionFactor, tReductionFactor);
+						return annealClimb(fn, newX, stepsize, iteration, patienceTokens - 1, temp * tReductionFactor, tReductionFactor);
 					}
 				}
 				//Stay here, repeat algorithm and reduce patience
 				else
 				{
-					return annealClimb(x, stepsize, iteration, patienceTokens - 1, temp * tReductionFactor, tReductionFactor);
+					return annealClimb(fn, x, stepsize, iteration, patienceTokens - 1, temp * tReductionFactor, tReductionFactor);
 				}
 				
 			}
@@ -195,42 +187,75 @@ public class Climber {
 				//if difference is enough, refresh patience
 				if (deltaT > minDiff)
 				{
-					return annealClimb(newX, stepsize, iteration, initNumPatienceTokens, temp * tReductionFactor, tReductionFactor);
+					return annealClimb(fn, newX, stepsize, iteration, initNumPatienceTokens, temp * tReductionFactor, tReductionFactor);
 				}
 				//otherwise reduce patience by 1
 				else
 				{
-					return annealClimb(newX, stepsize, iteration, patienceTokens - 1, temp * tReductionFactor, tReductionFactor);
+					return annealClimb(fn, newX, stepsize, iteration, patienceTokens - 1, temp * tReductionFactor, tReductionFactor);
 				}
 			}
 		}
 	}
 	
-	private static Answer climb(double x, double stepsize, int iteration)
+	//direction 0 is left, 1 is right
+	//returns the parameter coordinate one step away, within the domain and given a direction
+	private static double calculateStep(boolean isRight, Double x, double stepsize) {
+		double newX;
+		//if direction
+		if (!isRight){
+			//Make sure we stay within bounds
+			if (x - stepsize >= min_range)
+			{
+				newX = x - stepsize;
+			}
+			else
+			{
+				newX = x;
+			}
+		}
+		else {
+			if (x + stepsize <= max_range)
+			{
+				newX = x + stepsize;
+			}
+			else
+			{
+				newX = x;
+			}
+		}
+		return newX;
+	}
+
+	private static Answer climb(Function fn, Double[] x, double stepsize, int iteration)
 	{
-		double currentEval = fn(x);
+		Double currentEval = fn.evaluate(x);
 		iteration++;
+		
+		//roll dice to decide which which parameter to change
+		double rand_1 = Math.random() * 100;
+		int paramToChange = (int) (rand_1 / (100.0/x.length));
+
+		double partialLeftX;
+		double partialRightX;
 		double leftEval;
 		double rightEval;
 		
-		//Make sure we stay within bounds
-		if (x - stepsize >= 0)
-		{
-			leftEval = fn(x - stepsize);
-		}
-		else
-		{
-			leftEval = currentEval;
-		}
 		
-		if (x + stepsize <= 10)
-		{
-			rightEval = fn(x + stepsize);
-		}
-		else
-		{
-			rightEval = currentEval;
-		}
+		partialRightX = calculateStep(true,x[paramToChange], stepsize);
+		Double[] rightX = Arrays.copyOf(x, x.length);
+	
+		rightX[paramToChange] = partialRightX;
+	
+		rightEval = fn.evaluate(rightX);
+		
+		partialLeftX = calculateStep(false,x[paramToChange], stepsize);
+		
+		Double[] leftX = Arrays.copyOf(x, x.length);
+		
+		leftX[paramToChange] = partialLeftX;
+		
+		leftEval = fn.evaluate(leftX);
 		
 		//if both directions are just as good (and better than current)
 		if (leftEval == rightEval && leftEval > currentEval)
@@ -238,10 +263,10 @@ public class Climber {
 			//roll dice to decide which way to go so as to avoid direction bias
 			double rand = Math.random() * 100;
 			if (rand < 50){
-				return climb (x - stepsize, stepsize, iteration);
+				return climb (fn, leftX, stepsize, iteration);
 			}
 			else {
-				return climb (x + stepsize, stepsize, iteration);
+				return climb (fn, rightX, stepsize, iteration);
 			}
 		}
 		else
@@ -249,12 +274,12 @@ public class Climber {
 			//left is better than current and right
 			if (leftEval > currentEval && leftEval > rightEval)
 			{
-				return climb (x - stepsize, stepsize, iteration);
+				return climb (fn, leftX, stepsize, iteration);
 			}
 			//right is better than current and left
 			else if (rightEval > currentEval && leftEval < rightEval)
 			{
-				return climb (x + stepsize, stepsize, iteration);
+				return climb (fn, rightX, stepsize, iteration);
 			}
 			//current is better than both
 			else
@@ -275,15 +300,15 @@ public class Climber {
 	//a struct that stores the different data points of a single execution of the hill climbing/annealing  algorithm
 	private static class Answer
 	{
-		private double x;
+		private Double[] x;
 		private double y;
 		private int i;
-		public Answer(double px, double py, int pi){
+		public Answer(Double[] px, double py, int pi){
 			x = px;
 			y = py;
 			i = pi;
 		}
-		public double getX() {
+		public Double[] getX() {
 			return x;
 		}
 	
@@ -297,35 +322,35 @@ public class Climber {
 
 	}
 
-	//CODE PARTLY COPIED FROM: https://docs.oracle.com/javase/tutorial/essential/io/file.html
-	private static void createCSV(Answer[][] ansTable, String path, String header)
-	{
-	    // Convert the string to a
-	    // byte array.
-	    String s = header;
-	    byte data[] = s.getBytes();
-	    Path p = Paths.get(path);
-
-	    try (OutputStream out = new BufferedOutputStream(
-	      Files.newOutputStream(p, CREATE, APPEND))) {
-	      out.write(data, 0, data.length);
-	      for (int i = 0; i < ansTable.length; i++)
-	      {
-	    	  s = "" + i + ",";
-    		  data = s.getBytes(); 
-    		  out.write(data, 0, data.length);
-	    	  for (Answer ans : ansTable[i])
-	    	  {
-	    		  s = "Y = " + Math.round(ans.getY() * 100.0) / 100.0  + "  X = " + Math.round(ans.getX()*100.0)/100.0 + "  iterations = " + ans.getI() + ",";
-	    		  data = s.getBytes(); 
-	    		  out.write(data, 0, data.length);
-	    	  }
-	    	  s = "\n";
-    		  data = s.getBytes(); 
-    		  out.write(data, 0, data.length);
-	      }
-	    } catch (IOException x) {
-	      System.err.println(x);
-	    }
-	}
+//	//CODE PARTLY COPIED FROM: https://docs.oracle.com/javase/tutorial/essential/io/file.html
+//	private static void createCSV(Answer[][] ansTable, String path, String header)
+//	{
+//	    // Convert the string to a
+//	    // byte array.
+//	    String s = header;
+//	    byte data[] = s.getBytes();
+//	    Path p = Paths.get(path);
+//
+//	    try (OutputStream out = new BufferedOutputStream(
+//	      Files.newOutputStream(p, CREATE, APPEND))) {
+//	      out.write(data, 0, data.length);
+//	      for (int i = 0; i < ansTable.length; i++)
+//	      {
+//	    	  s = "" + i + ",";
+//    		  data = s.getBytes(); 
+//    		  out.write(data, 0, data.length);
+//	    	  for (Answer ans : ansTable[i])
+//	    	  {
+//	    		  s = "Y = " + Math.round(ans.getY() * 100.0) / 100.0  + "  X = " + Math.round(ans.getX()*100.0)/100.0 + "  iterations = " + ans.getI() + ",";
+//	    		  data = s.getBytes(); 
+//	    		  out.write(data, 0, data.length);
+//	    	  }
+//	    	  s = "\n";
+//    		  data = s.getBytes(); 
+//    		  out.write(data, 0, data.length);
+//	      }
+//	    } catch (IOException x) {
+//	      System.err.println(x);
+//	    }
+//	}
 }

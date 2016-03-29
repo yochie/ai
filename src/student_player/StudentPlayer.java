@@ -80,18 +80,18 @@ public class StudentPlayer extends HusPlayer {
         }
         
         //Choose the best move to take from current state
-        float bestYet = -Float.MAX_VALUE;
+        Double bestYet = -Double.MAX_VALUE;
         StateNode bestNode = null;
         
         for (Node<HusBoardState> child : rootNode.getChildren())
         {
-        	float current = MyTools.evaluateUtility((StateNode) child, player_id, opponent_id, MyTools.WEIGHTS);
+        	double current = MyTools.evaluateUtility((StateNode) child, player_id, opponent_id, MyTools.WEIGHTS);
         	if ( current > bestYet){
 				bestYet = current;
 				bestNode = (StateNode)child;
 			}
         }
-        System.out.println("Best move has evaluation : " + bestYet);
+//        System.out.println("Best move has evaluation : " + bestYet);
 		return bestNode.getMoveFromParent();
 		
 
