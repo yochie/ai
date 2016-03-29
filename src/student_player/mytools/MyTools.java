@@ -11,12 +11,12 @@ public class MyTools {
 	//tests different weight values and uses hill climbing to optimize
 	public static void main(String args[]){
 		
-		float [] weights = new float[HEURISTICS.length];
+		Double [] weights = new Double[HEURISTICS.length];
 		
 		//initialize weights so that they add up to 1
 		for (int i = 0; i < HEURISTICS.length; i++)
 		{
-			weights[i] = 0;//(float) (1.0/HEURISTICS.length);
+			weights[i] = 0.0;//(Double) (1.0/HEURISTICS.length);
 		}
 		Function evalFunction = new Function(){
 			@Override
@@ -44,6 +44,8 @@ public class MyTools {
 		
 	}
 	
+	//weights that are used by the student player both in performing in actual games and in training
+	//note: generic player has his weights in its own class
 	public static Double[] WEIGHTS = {1.0, 0.0, 0.0};
 	
 	public static final Heuristic[] HEURISTICS = {
@@ -86,25 +88,26 @@ public class MyTools {
 			}
 	};
 	
-        
+    //Returns the estimated utiliy of some state of the game    
 	public static double evaluateUtility(StateNode node, int player_id, int opponent_id, Double[] weights) {
 		//check if node was already evaluated, if so just return that eval
 		if (node.isEvaluated()){
 			return node.getEvaluation();
 		}
 		
-		//calculate evaluation using heuristic
+		//calculate evaluation using heuristic (we won't be going any further into the tree)
 		if (node.isLeaf()){
 			
 			//list of values returned by heuristics for the given state
 			ArrayList<Integer> computedHeurisitcs = new ArrayList<Integer>();
 			
+			//compute value returned by all heuristics
 			for (int i = 0; i < HEURISTICS.length; i++)
 			{
 				computedHeurisitcs.add(HEURISTICS[i].evaluate(node.getState(), node.isMyturn()));
 			}
 			
-			//Compute evaluation given weights
+			//Compute evaluation given weights on each heuristic
 			Double evaluation = 0.0;
 			int counter = 0;
 			for (Integer h : computedHeurisitcs)
