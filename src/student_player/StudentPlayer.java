@@ -73,8 +73,8 @@ public class StudentPlayer extends HusPlayer {
 	        	newNode.setMoveFromParent(m);
 	        	currentNode.addChild(newNode);
 	        	
-	        	stateStack.push(newNode);
 	        	//add to stack
+	        	stateStack.push(newNode);
 	        }
 	        
         }

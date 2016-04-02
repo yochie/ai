@@ -42,6 +42,9 @@ public class BalancedPlayer extends HusPlayer {
         //add root node to stack
         stateStack.push(rootNode);
         
+        //initialize iterators
+        HusBoardState newState = null;
+        StateNode newNode = null;        
         StateNode currentNode = null;
                 
         while (!stateStack.isEmpty()){
@@ -51,20 +54,20 @@ public class BalancedPlayer extends HusPlayer {
         	//get legal moves for its state
         	moves = currentNode.getState().getLegalMoves();
 
-        	//if its depth is 4 or more, we'll stop here and calculate its utility based on our heuristic
+        	//if its depth is 4 or more, we'll stop here and calculate its utility based on our heuristics
         	if (currentNode.getDepth() > 3){
         		currentNode.setLeaf(true);
         		MyTools.evaluateUtility(currentNode, player_id, opponent_id,WEIGHTS);
         		//System.out.println(currentNode.getEvaluation());
         		continue;
     		}
-        	StateNode newNode = null;
+			newNode = null;
         	
 	        //for each possible move
 	        for (HusMove m : moves){
 	        	
 	        	//create state copy
-	        	HusBoardState newState = (HusBoardState) currentNode.getState().clone();
+				newState = (HusBoardState) currentNode.getState().clone();
 	        	
 	        	//do move on that copy
 	        	newState.move(m);
