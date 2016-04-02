@@ -4,5 +4,5 @@ import hus.HusBoardState;
 
 public interface Heuristic {
 	
-	public int evaluate(HusBoardState input, boolean isMyTurn);
+	public double evaluate(HusBoardState input, boolean isMyTurn);
 }

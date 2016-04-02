@@ -91,7 +91,7 @@ public class StudentPlayer extends HusPlayer {
 				bestNode = (StateNode)child;
 			}
         }
-//        System.out.println("Best move has evaluation : " + bestYet);
+        System.out.println("Best move has evaluation : " + bestYet);
 		return bestNode.getMoveFromParent();
 		
 

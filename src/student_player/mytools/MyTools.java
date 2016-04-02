@@ -18,23 +18,39 @@ public class MyTools {
 		{
 			weights[i] = 0.0;//(Double) (1.0/HEURISTICS.length);
 		}
+		
+		//Evaluation function for hill climbing, returns probability of win for given weight setup
 		Function evalFunction = new Function(){
 			@Override
-			public double evaluate(Double[] x){
-				//play 10 games, see who comes out the winner
-				//return probability to win
-				int numIterations = 1;
+			public double evaluate(Double[] w){
+				//play n games, see who comes out the winner
+				int numIterations = 3;
 				
-				//set Weights to those to be tested
-				WEIGHTS = x;
+				//set static class Weights to those to be tested
+				WEIGHTS = w;
 				String[] argForAutoplay = {Integer.toString(numIterations)};
 				Autoplay.main(argForAutoplay); 
 				
-				//open log file and read last 10 lines, counts number of wins
-				int numWins = 0;
+				//open log file and read last n lines, count number of wins
+				int numWins = 0;			
 				
 				File file = new File("D:\\Code\\comp424_project\\logs\\outcomes.txt");
-				System.out.println(tail(file, 20));
+				
+				String lastLines = tail(file, numIterations);
+				
+				String[] result =lastLines.split("\\n");
+
+				String[] line;
+				String winnerId;
+				String myId = "260585399";
+				for (int i = 1; i < result.length; i++){
+					line = result[i].split(",");
+					winnerId = line[4];
+					if(winnerId.compareTo(myId) == 0)
+					{
+						numWins++;
+					}
+				}
 				
 				return (double) numWins/numIterations;
 			}
@@ -46,13 +62,13 @@ public class MyTools {
 	
 	//weights that are used by the student player both in performing in actual games and in training
 	//note: generic player has his weights in its own class
-	public static Double[] WEIGHTS = {1.0, 0.0, 0.0};
+	public static Double[] WEIGHTS = {1.0, 1.0, 0.0};
 	
 	public static final Heuristic[] HEURISTICS = {
 			//First heuristic: number of stones in my pits - number of stones in opponent's pits
 			new Heuristic(){
 				@Override
-				public int evaluate(HusBoardState state, boolean isMyTurn){
+				public double evaluate(HusBoardState state, boolean isMyTurn){
 					int[][] pits = state.getPits();
 					
 					int[] my_pits;
@@ -69,20 +85,44 @@ public class MyTools {
 					
 					int my_num = sum(my_pits);
 					int op_num = sum(op_pits);
-					int h1 = my_num - op_num;
+					double h1 = my_num - op_num;
+					
+					//Normalize heuristic by dividng by its maximum theoretical value to get a number 0<h1<1
+					h1 /= 96;
+					
 					return h1;				}
-			},
-			//Second heuristic : 
+			},	
+			
+			//Second heuristic : minimize number of stones that opponent has in rightmost portion of his front row.
 			new Heuristic(){
 				@Override
-				public int evaluate(HusBoardState state, boolean isMyTurn){
-					return 0;
+				public double evaluate(HusBoardState state, boolean isMyTurn){
+					int[][] pits = state.getPits();
+					int[] op_pits;
+
+					if (isMyTurn){
+						op_pits = pits[(state.getTurnPlayer() + 1) % 2];
+					}
+					else{
+						op_pits = pits[state.getTurnPlayer()];						
+					}
+					
+					int numStones = 0;
+					//for the rightmost 3 pits of the oppponents front row
+					for (int i = HusBoardState.BOARD_WIDTH; i < HusBoardState.BOARD_WIDTH + 2; i++){
+						numStones += op_pits[i];
+					}
+					
+					//return negative number total of stones
+					//divided by 10 to normalize somewhat
+					//this is sort of abritrary, but should help balance heuristic so that it is closer to 1 
+					return (double) -numStones/10.0;
 				}
 			},
-			//Second heuristic : 
+			//Third heuristic : minimize number of vulnerable pits on my side
 			new Heuristic(){
 				@Override
-				public int evaluate(HusBoardState state, boolean isMyTurn){
+				public double evaluate(HusBoardState state, boolean isMyTurn){
 					return 0;
 				}
 			}
@@ -99,7 +139,7 @@ public class MyTools {
 		if (node.isLeaf()){
 			
 			//list of values returned by heuristics for the given state
-			ArrayList<Integer> computedHeurisitcs = new ArrayList<Integer>();
+			ArrayList<Double> computedHeurisitcs = new ArrayList<Double>();
 			
 			//compute value returned by all heuristics
 			for (int i = 0; i < HEURISTICS.length; i++)
@@ -110,7 +150,7 @@ public class MyTools {
 			//Compute evaluation given weights on each heuristic
 			Double evaluation = 0.0;
 			int counter = 0;
-			for (Integer h : computedHeurisitcs)
+			for (Double h : computedHeurisitcs)
 			{
 				evaluation += h * weights[counter];
 				counter++;
@@ -162,8 +202,9 @@ public class MyTools {
 	}
 	
 	//COPIED FROM http://stackoverflow.com/questions/686231/quickly-read-the-last-line-of-a-text-file
-	//grabs the last "lines"/2 lines of a file
+	//grabs the last "lines" lines of a file
 	public static String tail( File file, int lines) {
+		lines *= 2;
 	    java.io.RandomAccessFile fileHandler = null;
 	    try {
 	        fileHandler = 
