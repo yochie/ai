@@ -2,13 +2,10 @@ package student_player.mytools;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import autoplay.Autoplay;
 import hus.HusBoardState;
@@ -158,12 +155,11 @@ public class MyTools {
 				}
 				WEIGHTS = weightsBackup;
 				
-				List<String> lines = Arrays.asList("Evaluated win rate for weights: " + w[0].toString() + ", " + w[1].toString() +", " + w[2].toString() + " won  " + numWins + " out of " + numIterations);
-				Path f = Paths.get("myownlog.txt");
+				String line1 ="Evaluated win rate for weights: " + w[0].toString() + ", " + w[1].toString() +", " + w[2].toString() + " won  " + numWins + " out of " + numIterations;
 				try {
-					Files.write(f, lines, Charset.forName("UTF-8"));
-				} catch (IOException e) {
-					e.printStackTrace();
+				    Files.write(Paths.get("myownlog.txt"), line1.getBytes(), StandardOpenOption.APPEND);
+				}catch (IOException e) {
+				    //exception handling left as an exercise for the reader
 				}
 				
 				System.out.println("Evaluated win rate for weights: " + w[0].toString() + ", " + w[1].toString() +", " + w[2].toString() + " won  " + numWins + " out of " + numIterations);
