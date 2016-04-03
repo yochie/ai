@@ -30,11 +30,11 @@ public class Climber {
 //		Answer[][][] tableOutput = new Answer[numStartingPos][numStartingPos][numStartingPos]; 
 		Answer result;
 		
-		Double x1 = 1.0;
-		Double x2 = 1.0;
+		Double x1 = 5.0;
+		Double x2 = 3.0;
 		Double x3 = 1.0;
 		
-		result = climb(fn, new Double[] {x1, x2, x3}, stepsize, 0);
+		result = climb(fn, new Double[] {x1, x2, x3}, stepsize, 0, null);
 		
 		System.out.println("FOUND OPTIMUM : ");
 		
@@ -231,9 +231,11 @@ public class Climber {
 		return newX;
 	}
 
-	private static Answer climb(Function fn, Double[] x, double stepsize, int iteration)
+	private static Answer climb(Function fn, Double[] x, double stepsize, int iteration, Double currentEval)
 	{
-		Double currentEval = fn.evaluate(x);
+		if (currentEval == null){
+			currentEval = fn.evaluate(x);
+		}
 		iteration++;
 		
 
@@ -242,14 +244,12 @@ public class Climber {
 		
 		int paramToChange = (int) (rand_1 / (100.0/x.length));
 		
-		
+		double partialLeftX;
+		double partialRightX;
+		double leftEval;
+		double rightEval;
 		for (int i = 0; i < 3; i++){
-				
-			double partialLeftX;
-			double partialRightX;
-			double leftEval;
-			double rightEval;
-			
+
 			//get new x for the chosen dimension
 			partialRightX = calculateStep(true,x[paramToChange], stepsize);
 			Double[] rightX = Arrays.copyOf(x, x.length);
@@ -267,15 +267,15 @@ public class Climber {
 			leftEval = fn.evaluate(leftX);
 			
 			//if both directions are just as good (and better than current)
-			if (leftEval == rightEval && leftEval >= currentEval)
+			if (leftEval == rightEval && leftEval > currentEval)
 			{
 				//roll dice to decide which way to go so as to avoid direction bias
 				double rand = Math.random() * 100;
 				if (rand < 50){
-					return climb (fn, leftX, stepsize, iteration);
+					return climb (fn, leftX, stepsize, iteration, leftEval);
 				}
 				else {
-					return climb (fn, rightX, stepsize, iteration);
+					return climb (fn, rightX, stepsize, iteration, rightEval);
 				}
 			}
 			else
@@ -283,27 +283,28 @@ public class Climber {
 				//left is better than current and right
 				if (leftEval > currentEval && leftEval > rightEval)
 				{
-					return climb (fn, leftX, stepsize, iteration);
+					return climb (fn, leftX, stepsize, iteration, leftEval);
 				}
 				//right is better than current and left
 				else if (rightEval > currentEval && leftEval < rightEval)
 				{
-					return climb (fn, rightX, stepsize, iteration);
+					return climb (fn, rightX, stepsize, iteration, rightEval);
 				}
-				//current is better than both
+				//current is better than (or equal to) both
 				else
 				{
+					double rand_2 = Math.random() * 100;
 					//try changing other parameters
 					switch (paramToChange) {
 		            	case 0:  
-		            		paramToChange = 1 + (int) (rand_1 / (100.0/(x.length -1)));
+		            		paramToChange = 1 + (int) (rand_2 / (100.0/(x.length -1)));
 		                     break;	
 		            	case 1:  
-		            		paramToChange = (int) (rand_1 / (100.0/(x.length -1)));
+		            		paramToChange = (int) (rand_2 / (100.0/(x.length -1)));
 		            		if (paramToChange == 1) {paramToChange++;}
 		                     break;
 		            	case 2:  
-		            		paramToChange = (int) (rand_1 / (100.0/(x.length -1)));
+		            		paramToChange = (int) (rand_2 / (100.0/(x.length -1)));
 		            		if (paramToChange == 2) {paramToChange--;}	            		
 		                     break;
 					}

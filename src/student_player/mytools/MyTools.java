@@ -2,7 +2,13 @@ package student_player.mytools;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import autoplay.Autoplay;
 import hus.HusBoardState;
@@ -152,7 +158,15 @@ public class MyTools {
 				}
 				WEIGHTS = weightsBackup;
 				
-				System.out.println("Evaluated win rate for weights: " + w[0].toString() + ", " + w[1].toString() +", " + w[2].toString() + " won  : " + numWins + " out of : " + numIterations);
+				List<String> lines = Arrays.asList("Evaluated win rate for weights: " + w[0].toString() + ", " + w[1].toString() +", " + w[2].toString() + " won  " + numWins + " out of " + numIterations);
+				Path f = Paths.get("myownlog.txt");
+				try {
+					Files.write(f, lines, Charset.forName("UTF-8"));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+				System.out.println("Evaluated win rate for weights: " + w[0].toString() + ", " + w[1].toString() +", " + w[2].toString() + " won  " + numWins + " out of " + numIterations);
 				
 				return (double) numWins/(double) numIterations;
 			}
