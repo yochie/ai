@@ -14,16 +14,7 @@ import student_player.mytools.StateNode;
  * uses a uniformly balanced weight function */
 public class BalancedPlayer extends HusPlayer {
 	
-	//Fix weights to add up to 1
-	private static final Double[] WEIGHTS = {1.0, 0.0, 0.0}; 
-			
-			/*new Double[MyTools.HEURISTICS.length];
-	static {
-		for (int i =0; i< WEIGHTS.length; i++){
-			WEIGHTS[i] = (Double) 1.0/WEIGHTS.length;
-		}
-	}
-	*/
+
     public BalancedPlayer() { super("balancedPlayer"); }
     
     public HusMove chooseMove(HusBoardState board_state)
@@ -95,7 +86,7 @@ public class BalancedPlayer extends HusPlayer {
         
         for (Node<HusBoardState> child : rootNode.getChildren())
         {
-        	double current = MyTools.evaluateUtility((StateNode) child, player_id, opponent_id, WEIGHTS);
+        	double current = MyTools.evaluateUtility((StateNode) child, player_id, opponent_id, MyTools.BALANCED_WEIGHTS);
         	if ( current > bestYet){
 				bestYet = current;
 				bestNode = (StateNode)child;

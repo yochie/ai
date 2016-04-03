@@ -11,7 +11,7 @@ public class MyTools {
 	
 	//weights that are used by the student player both in performing in actual games and in training
 	//note: generic player has his weights in its own class
-	public static Double[] WEIGHTS = {1.0, 1.0, 0.2};
+	public static Double[] WEIGHTS = {5.0, 1.0, 0.2};
 	
 	public static Double[] BALANCED_WEIGHTS = {1.0, 0.0, 0.0}; /*new Double[MyTools.HEURISTICS.length];
 	static {
@@ -105,8 +105,6 @@ public class MyTools {
 	};
 	
 	
-	
-	
 	//tests different weight values and uses hill climbing to optimize
 	public static void main(String args[]){
 		
@@ -154,7 +152,9 @@ public class MyTools {
 				}
 				WEIGHTS = weightsBackup;
 				
-				return (double) numWins/numIterations;
+				System.out.println("Evaluated win rate for weights: " + w[0].toString() + ", " + w[1].toString() +", " + w[2].toString() + " won  : " + numWins + " out of : " + numIterations);
+				
+				return (double) numWins/(double) numIterations;
 			}
 		};
 		//run hill climbing over space of heuristic weights

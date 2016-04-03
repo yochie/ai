@@ -99,7 +99,7 @@ public class StudentPlayer extends HusPlayer {
         	rootNode.getChildren().get(0);
         }
         
-        System.out.println("Best move has evaluation : " + bestYet);
+        //System.out.println("Best move has evaluation : " + bestYet);
 		return bestNode.getMoveFromParent();
 		
 
