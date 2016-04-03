@@ -51,6 +51,8 @@ public class StudentPlayer extends HusPlayer {
         	//if its depth is 4 or more, we'll stop here and calculate its utility based on our heuristic
         	if (currentNode.getDepth() > 3){
         		currentNode.setLeaf(true);
+        		
+        		//uses static weights from MyTools
         		MyTools.evaluateUtility(currentNode, player_id, opponent_id, MyTools.WEIGHTS);
         		//System.out.println(currentNode.getEvaluation());
         		continue;
@@ -91,6 +93,12 @@ public class StudentPlayer extends HusPlayer {
 				bestNode = (StateNode)child;
 			}
         }
+        
+        //if no child found, loose is guaranteed, just pick firt possible move
+        if(bestNode == null){
+        	rootNode.getChildren().get(0);
+        }
+        
         System.out.println("Best move has evaluation : " + bestYet);
 		return bestNode.getMoveFromParent();
 		

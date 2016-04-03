@@ -15,13 +15,15 @@ import student_player.mytools.StateNode;
 public class BalancedPlayer extends HusPlayer {
 	
 	//Fix weights to add up to 1
-	private static final Double[] WEIGHTS = new Double[MyTools.HEURISTICS.length];
+	private static final Double[] WEIGHTS = {1.0, 0.0, 0.0}; 
+			
+			/*new Double[MyTools.HEURISTICS.length];
 	static {
 		for (int i =0; i< WEIGHTS.length; i++){
 			WEIGHTS[i] = (Double) 1.0/WEIGHTS.length;
 		}
 	}
-	
+	*/
     public BalancedPlayer() { super("balancedPlayer"); }
     
     public HusMove chooseMove(HusBoardState board_state)
@@ -57,7 +59,9 @@ public class BalancedPlayer extends HusPlayer {
         	//if its depth is 4 or more, we'll stop here and calculate its utility based on our heuristics
         	if (currentNode.getDepth() > 3){
         		currentNode.setLeaf(true);
-        		MyTools.evaluateUtility(currentNode, player_id, opponent_id,WEIGHTS);
+        		
+        		//Uses static balanced player weights from MyTools
+        		MyTools.evaluateUtility(currentNode, player_id, opponent_id,MyTools.BALANCED_WEIGHTS);
         		//System.out.println(currentNode.getEvaluation());
         		continue;
     		}

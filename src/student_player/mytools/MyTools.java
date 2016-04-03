@@ -8,64 +8,20 @@ import autoplay.Autoplay;
 import hus.HusBoardState;
 
 public class MyTools {
-	//tests different weight values and uses hill climbing to optimize
-	public static void main(String args[]){
-		
-		Double [] weights = new Double[HEURISTICS.length];
-		
-		//initialize weights so that they add up to 1
-		for (int i = 0; i < HEURISTICS.length; i++)
-		{
-			weights[i] = 0.0;//(Double) (1.0/HEURISTICS.length);
-		}
-		
-		//Evaluation function for hill climbing, returns probability of win for given weight setup
-		Function evalFunction = new Function(){
-			@Override
-			public double evaluate(Double[] w){
-				//play n games, see who comes out the winner
-				int numIterations = 3;
-				
-				//set static class Weights to those to be tested
-				WEIGHTS = w;
-				String[] argForAutoplay = {Integer.toString(numIterations)};
-				Autoplay.main(argForAutoplay); 
-				
-				//open log file and read last n lines, count number of wins
-				int numWins = 0;			
-				
-				File file = new File("D:\\Code\\comp424_project\\logs\\outcomes.txt");
-				
-				String lastLines = tail(file, numIterations);
-				
-				String[] result =lastLines.split("\\n");
-
-				String[] line;
-				String winnerId;
-				String myId = "260585399";
-				for (int i = 1; i < result.length; i++){
-					line = result[i].split(",");
-					winnerId = line[4];
-					if(winnerId.compareTo(myId) == 0)
-					{
-						numWins++;
-					}
-				}
-				
-				return (double) numWins/numIterations;
-			}
-		};
-		//run hill climbing over space of heuristic weights
-		Climber.execute(evalFunction);
-		
-	}
 	
 	//weights that are used by the student player both in performing in actual games and in training
 	//note: generic player has his weights in its own class
-	public static Double[] WEIGHTS = {1.0, 1.0, 0.0};
+	public static Double[] WEIGHTS = {1.0, 1.0, 0.2};
 	
+	public static Double[] BALANCED_WEIGHTS = {1.0, 0.0, 0.0}; /*new Double[MyTools.HEURISTICS.length];
+	static {
+		for (int i =0; i< WEIGHTS.length; i++){
+			WEIGHTS[i] = (Double) 1.0/WEIGHTS.length;
+		}
+	}
+	*/
 	public static final Heuristic[] HEURISTICS = {
-			//First heuristic: number of stones in my pits - number of stones in opponent's pits
+			//First heuristic: maximize number of stones in my pits - number of stones in opponent's pits
 			new Heuristic(){
 				@Override
 				public double evaluate(HusBoardState state, boolean isMyTurn){
@@ -109,7 +65,7 @@ public class MyTools {
 					
 					int numStones = 0;
 					//for the rightmost 3 pits of the oppponents front row
-					for (int i = HusBoardState.BOARD_WIDTH; i < HusBoardState.BOARD_WIDTH + 2; i++){
+					for (int i = HusBoardState.BOARD_WIDTH; i <= HusBoardState.BOARD_WIDTH + 2; i++){
 						numStones += op_pits[i];
 					}
 					
@@ -119,15 +75,94 @@ public class MyTools {
 					return (double) -numStones/10.0;
 				}
 			},
-			//Third heuristic : minimize number of vulnerable pits on my side
+			//Third heuristic : maximize number of protected pits on my side
 			new Heuristic(){
 				@Override
 				public double evaluate(HusBoardState state, boolean isMyTurn){
-					return 0;
+					int[][] pits = state.getPits();
+					
+					int[] my_pits;
+
+					if (isMyTurn){
+						my_pits = pits[state.getTurnPlayer()];
+					}
+					else{
+						my_pits = pits[(state.getTurnPlayer() + 1) % 2];
+					}
+					
+					double hidden = 0;
+					
+					for (int i = HusBoardState.BOARD_WIDTH; i <= (HusBoardState.BOARD_WIDTH * 2) - 1; i++){
+						if (my_pits[i] == 0){
+							hidden += my_pits[HusBoardState.BOARD_WIDTH - (i - HusBoardState.BOARD_WIDTH )];
+						}
+					}
+					
+					//Again, normalize before returning by a somewhat arbitrary factor so that we are closer to 1
+					return hidden/15.0;
 				}
 			}
 	};
 	
+	
+	
+	
+	//tests different weight values and uses hill climbing to optimize
+	public static void main(String args[]){
+		
+		Double [] weights = new Double[HEURISTICS.length];
+		
+		//initialize weights so that they add up to 1
+		for (int i = 0; i < HEURISTICS.length; i++)
+		{
+			weights[i] = 1.0;//(Double) (1.0/HEURISTICS.length);
+		}
+		
+		//Evaluation function for hill climbing, returns probability of win for given weight setup
+		Function evalFunction = new Function(){
+			@Override
+			public double evaluate(Double[] w){
+				//play n games, see who comes out the winner
+				int numIterations = 3;
+				
+				//set static class Weights to those to be tested
+				Double[] weightsBackup = WEIGHTS;
+				
+				WEIGHTS = w;
+				String[] argForAutoplay = {Integer.toString(numIterations)};
+				Autoplay.main(argForAutoplay); 
+				
+				//open log file and read last n lines, count number of wins
+				int numWins = 0;			
+				
+				File file = new File("D:\\Code\\comp424_project\\logs\\outcomes.txt");
+				
+				String lastLines = tail(file, numIterations);
+				
+				String[] result =lastLines.split("\\n");
+
+				String[] line;
+				String winnerId;
+				String myId = "260585399";
+				for (int i = 1; i < result.length; i++){
+					line = result[i].split(",");
+					winnerId = line[4];
+					if(winnerId.compareTo(myId) == 0)
+					{
+						numWins++;
+					}
+				}
+				WEIGHTS = weightsBackup;
+				
+				return (double) numWins/numIterations;
+			}
+		};
+		//run hill climbing over space of heuristic weights
+		Climber.execute(evalFunction);
+		
+	}
+	
+
     //Returns the estimated utiliy of some state of the game    
 	public static double evaluateUtility(StateNode node, int player_id, int opponent_id, Double[] weights) {
 		//check if node was already evaluated, if so just return that eval
