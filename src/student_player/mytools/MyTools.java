@@ -14,7 +14,7 @@ public class MyTools {
 	
 	//weights that are used by the student player both in performing in actual games and in training
 	//note: generic player has his weights in its own class
-	public static Double[] WEIGHTS = {5.0, 1.0, 0.2};
+	public static Double[] WEIGHTS = {10.0, 1.0, 0.2};
 	
 	public static Double[] BALANCED_WEIGHTS = {1.0, 0.0, 0.0}; /*new Double[MyTools.HEURISTICS.length];
 	static {
@@ -124,7 +124,7 @@ public class MyTools {
 			@Override
 			public double evaluate(Double[] w){
 				//play n games, see who comes out the winner
-				int numIterations = 3;
+				int numIterations = 5;
 				
 				//set static class Weights to those to be tested
 				Double[] weightsBackup = WEIGHTS;
@@ -155,7 +155,7 @@ public class MyTools {
 				}
 				WEIGHTS = weightsBackup;
 				
-				String line1 ="Evaluated win rate for weights: " + w[0].toString() + ", " + w[1].toString() +", " + w[2].toString() + " won  " + numWins + " out of " + numIterations;
+				String line1 ="Evaluated win rate for weights: " + w[0].toString() + ", " + w[1].toString() +", " + w[2].toString() + " won  " + numWins + " out of " + numIterations + "\n";
 				try {
 				    Files.write(Paths.get("myownlog.txt"), line1.getBytes(), StandardOpenOption.APPEND);
 				}catch (IOException e) {
@@ -214,6 +214,10 @@ public class MyTools {
 				Double current = evaluateUtility((StateNode) child, player_id, opponent_id, weights);
 				if ( current > bestYet){
 					bestYet = current;
+					node.setMinRange(current);
+					if (outsideParentsRange(node)){
+						break;
+					}
 				}
 			}
 			node.setEvaluation(bestYet);
@@ -229,6 +233,10 @@ public class MyTools {
 				Double current = evaluateUtility((StateNode) child, player_id, opponent_id, weights);
 				if ( current < bestYet){
 					bestYet = current;
+					node.setMaxRange(current);
+					if (outsideParentsRange(node)){
+						break;
+					}
 				}
 			}
 			node.setEvaluation(bestYet);
@@ -236,6 +244,20 @@ public class MyTools {
 			return bestYet;
 		}
 	}
+
+	private static boolean outsideParentsRange(StateNode node) {
+		StateNode parent = (StateNode) node.getParent();
+		while (node.getParent() != null){
+			if (node.getRange()[0] > parent.getRange()[1] || node.getRange()[1] < parent.getRange()[0])
+			{
+				return true;
+			}
+			node = parent;
+			parent = (StateNode) node.getParent();
+		}
+		return false;
+	}
+
 
 	private static int sum(int[] pits) {
 		int total = 0;

@@ -12,6 +12,7 @@ public class StateNode extends Node<HusBoardState> implements Cloneable{
 	private boolean myturn;
 	private boolean leaf;
 	private HusMove moveFromParent;
+	private Double[] range = {-Double.MAX_VALUE, Double.MAX_VALUE};
 	
 	public StateNode(StateNode parent, HusBoardState state, ArrayList<StateNode> children){
 		this.setState((HusBoardState)state);
@@ -96,6 +97,18 @@ public class StateNode extends Node<HusBoardState> implements Cloneable{
 
 	public void setEvaluated(boolean evaluated) {
 		this.evaluated = evaluated;
+	}
+
+	public Double[] getRange() {
+		return range;
+	}
+
+	public void setMinRange(Double minRange) {
+		this.range[0] = minRange;
+		
+	}
+	public void setMaxRange(Double maxRange){
+		this.range[1] = maxRange;
 	}
 
 }
