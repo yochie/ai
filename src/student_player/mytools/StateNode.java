@@ -40,13 +40,15 @@ public class StateNode extends Node<HusBoardState> implements Cloneable{
 	}
 
 	@Override
+	//breaches encapsulation for optimization purposes
 	public HusBoardState getState() {
-		return (HusBoardState) this.state.clone();
+		return (HusBoardState) this.state;
 	}
 
 	@Override
+	//breaches encapsulation for optimization purposes
 	public void setState(HusBoardState state) {	
-		this.state = (HusBoardState) state.clone();
+		this.state = state;
 	}
 
 

@@ -52,7 +52,7 @@ public class BalancedPlayer extends HusPlayer {
         		currentNode.setLeaf(true);
         		
         		//Uses static balanced player weights from MyTools
-        		MyTools.evaluateUtility(currentNode, player_id, opponent_id,MyTools.BALANCED_WEIGHTS, false);
+        		//MyTools.evaluateUtility(currentNode, player_id, opponent_id,MyTools.BALANCED_WEIGHTS, false);
         		//System.out.println(currentNode.getEvaluation());
         		continue;
     		}
@@ -82,29 +82,6 @@ public class BalancedPlayer extends HusPlayer {
         MyTools.evaluateUtility(rootNode, player_id, opponent_id, MyTools.BALANCED_WEIGHTS, true);
         
         return MyTools.bestMove;
-        
-//        //Choose the best move to take from current state
-//        Double bestYet = -Double.MAX_VALUE;
-//        StateNode bestNode = null;
-//        
-//        for (Node<HusBoardState> child : rootNode.getChildren())
-//        {
-//        	double current = MyTools.evaluateUtility((StateNode) child, player_id, opponent_id, MyTools.WEIGHTS, true);
-//        	if ( current > bestYet){
-//				bestYet = current;
-//				bestNode = (StateNode)child;
-//			}
-//        }
-//        
-//        //if no child found, loose is guaranteed, just pick firt possible move
-//        if(bestNode == null){
-//        	rootNode.getChildren().get(0);
-//        }
-//        
-//        //System.out.println("Best move has evaluation : " + bestYet);
-//		return bestNode.getMoveFromParent();
-		
-
     }
 	
 }

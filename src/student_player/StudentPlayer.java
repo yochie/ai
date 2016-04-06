@@ -46,30 +46,31 @@ public class StudentPlayer extends HusPlayer {
         	
         	//get legal moves for its state
         	moves = currentNode.getState().getLegalMoves();
-
+        	int currentDepth = currentNode.getDepth();
         	//if its depth is 4 or more, we'll stop here and calculate its utility based on our heuristic
-        	if (currentNode.getDepth() > 3){
+        	if ( currentDepth > 4){
         		currentNode.setLeaf(true);
         		
         		//uses static weights from MyTools
-        		MyTools.evaluateUtility(currentNode, player_id, opponent_id, MyTools.WEIGHTS, false);
+        		//MyTools.evaluateUtility(currentNode, player_id, opponent_id, MyTools.WEIGHTS, false);
         		//System.out.println(currentNode.getEvaluation());
         		continue;
     		}
         	StateNode newNode = null;
         	
+        	HusBoardState newState;
 	        //for each possible move
 	        for (HusMove m : moves){
 	        	
 	        	//create state copy
-	        	HusBoardState newState = (HusBoardState) currentNode.getState().clone();
+				newState = (HusBoardState) currentNode.getState().clone();
 	        	
 	        	//do move on that copy
 	        	newState.move(m);
 	        	
 	        	//add new state as child in tree
 	        	newNode = new StateNode(currentNode, newState);
-	        	newNode.setDepth(currentNode.getDepth()+1);
+	        	newNode.setDepth(currentDepth+1);
 	        	newNode.setMyturn(!currentNode.isMyturn());
 	        	newNode.setMoveFromParent(m);
 	        	currentNode.addChild(newNode);
@@ -80,32 +81,9 @@ public class StudentPlayer extends HusPlayer {
 	        
         }
         
-        MyTools.evaluateUtility(rootNode, player_id, opponent_id, MyTools.WEIGHTS, true);
+        MyTools.evaluateUtility(rootNode, player_id, opponent_id, MyTools.MY_PLAYER_WEIGHTS, true);
         
         return MyTools.bestMove;
-        
-//        //Choose the best move to take from current state
-//        Double bestYet = -Double.MAX_VALUE;
-//        StateNode bestNode = null;
-//        
-//        for (Node<HusBoardState> child : rootNode.getChildren())
-//        {
-//        	double current = MyTools.evaluateUtility((StateNode) child, player_id, opponent_id, MyTools.WEIGHTS, true);
-//        	if ( current > bestYet){
-//				bestYet = current;
-//				bestNode = (StateNode)child;
-//			}
-//        }
-//        
-//        //if no child found, loose is guaranteed, just pick firt possible move
-//        if(bestNode == null){
-//        	rootNode.getChildren().get(0);
-//        }
-//        
-//        //System.out.println("Best move has evaluation : " + bestYet);
-//		return bestNode.getMoveFromParent();
-		
-
     }
 
 }

@@ -18,7 +18,7 @@ public class MyTools {
 	
 	//weights that are used by the student player both in performing in actual games and in training
 	//note: generic player has his weights in its own class
-	public static Double[] WEIGHTS = {1.0, 0.3, 0.3};
+	public static Double[] MY_PLAYER_WEIGHTS = {1.0, 0.3, 0.3};
 	
 	public static Double[] BALANCED_WEIGHTS = {1.0, 0.0, 0.0}; /*new Double[MyTools.HEURISTICS.length];
 	static {
@@ -131,9 +131,9 @@ public class MyTools {
 				int numIterations = 5;
 				
 				//set static class Weights to those to be tested
-				Double[] weightsBackup = WEIGHTS;
+				Double[] weightsBackup = MY_PLAYER_WEIGHTS;
 				
-				WEIGHTS = w;
+				MY_PLAYER_WEIGHTS = w;
 				String[] argForAutoplay = {Integer.toString(numIterations)};
 				Autoplay.main(argForAutoplay); 
 				
@@ -157,7 +157,7 @@ public class MyTools {
 						numWins++;
 					}
 				}
-				WEIGHTS = weightsBackup;
+				MY_PLAYER_WEIGHTS = weightsBackup;
 				
 				String line1 ="Evaluated win rate for weights: " + w[0].toString() + ", " + w[1].toString() +", " + w[2].toString() + " won  " + numWins + " out of " + numIterations + "\n";
 				try {
@@ -183,6 +183,7 @@ public class MyTools {
 			//reset static variable to default value in case no move offers better evaluation than min value
 			bestMove = ((StateNode) node.getChildren().get(0)).getMoveFromParent();
 		}
+		
 		//check if node was already evaluated, if so just return that eval
 		if (node.isEvaluated()){
 			return node.getEvaluation();
