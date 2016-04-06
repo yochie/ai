@@ -128,7 +128,7 @@ public class MyTools {
 			@Override
 			public double evaluate(Double[] w){
 				//play n games, see who comes out the winner
-				int numIterations = 3;
+				int numIterations = 5;
 				
 				//set static class Weights to those to be tested
 				Double[] weightsBackup = WEIGHTS;
@@ -222,10 +222,11 @@ public class MyTools {
 		else if (node.isMyturn())
 		{
 			Double bestYet = -Double.MAX_VALUE;
+			Double current = null;
 			//choose max of children evaluations
 			for (Node<HusBoardState> child : node.getChildren()){
 				StateNode husChild = (StateNode) child;
-				Double current = evaluateUtility(husChild, player_id, opponent_id, weights, false);
+				current = evaluateUtility(husChild, player_id, opponent_id, weights, false);
 				if ( current > bestYet){
 					bestYet = current;
 					if (firsiteration){
@@ -247,10 +248,11 @@ public class MyTools {
 		{
 			
 			Double bestYet = Double.MAX_VALUE;
+			Double current = null;
 			//choose min of children evaluations
 			for (Node<HusBoardState> child : node.getChildren()){
 				StateNode husChild = (StateNode) child;
-				Double current = evaluateUtility(husChild, player_id, opponent_id, weights, false);
+				current = evaluateUtility(husChild, player_id, opponent_id, weights, false);
 				if ( current < bestYet){
 					bestYet = current;
 

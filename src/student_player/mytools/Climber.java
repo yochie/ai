@@ -15,10 +15,10 @@ public class Climber {
 	//factor to multiply temperature by at each iteration
 //	private static double alpha = 0.5;
 	
-	private static int min_range = -10;
+	private static int min_range = -20;
 	
 	
-	private static int max_range = 10;
+	private static int max_range = 20;
 	
 	//has to evenly divided max - min ranges
 //	private static int numStartingPos = 5;

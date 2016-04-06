@@ -25,7 +25,7 @@ public class StudentPlayer extends HusPlayer {
     public HusMove chooseMove(HusBoardState board_state)
     {
         // Get the legal moves for the current board state.
-        ArrayList<HusMove> moves = board_state.getLegalMoves();
+        ArrayList<HusMove> moves = null;
         
         //create the starting node for our minimax tree
         StateNode rootNode = new StateNode((HusBoardState) board_state);
