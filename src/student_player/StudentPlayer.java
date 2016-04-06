@@ -7,7 +7,6 @@ import hus.HusBoardState;
 import hus.HusMove;
 import hus.HusPlayer;
 import student_player.mytools.MyTools;
-import student_player.mytools.Node;
 import student_player.mytools.StateNode;
 
 /** A Hus player submitted by a student. */
@@ -53,7 +52,7 @@ public class StudentPlayer extends HusPlayer {
         		currentNode.setLeaf(true);
         		
         		//uses static weights from MyTools
-        		MyTools.evaluateUtility(currentNode, player_id, opponent_id, MyTools.WEIGHTS);
+        		MyTools.evaluateUtility(currentNode, player_id, opponent_id, MyTools.WEIGHTS, false);
         		//System.out.println(currentNode.getEvaluation());
         		continue;
     		}
@@ -81,26 +80,30 @@ public class StudentPlayer extends HusPlayer {
 	        
         }
         
-        //Choose the best move to take from current state
-        Double bestYet = -Double.MAX_VALUE;
-        StateNode bestNode = null;
+        MyTools.evaluateUtility(rootNode, player_id, opponent_id, MyTools.WEIGHTS, true);
         
-        for (Node<HusBoardState> child : rootNode.getChildren())
-        {
-        	double current = MyTools.evaluateUtility((StateNode) child, player_id, opponent_id, MyTools.WEIGHTS);
-        	if ( current > bestYet){
-				bestYet = current;
-				bestNode = (StateNode)child;
-			}
-        }
+        return MyTools.bestMove;
         
-        //if no child found, loose is guaranteed, just pick firt possible move
-        if(bestNode == null){
-        	rootNode.getChildren().get(0);
-        }
-        
-        //System.out.println("Best move has evaluation : " + bestYet);
-		return bestNode.getMoveFromParent();
+//        //Choose the best move to take from current state
+//        Double bestYet = -Double.MAX_VALUE;
+//        StateNode bestNode = null;
+//        
+//        for (Node<HusBoardState> child : rootNode.getChildren())
+//        {
+//        	double current = MyTools.evaluateUtility((StateNode) child, player_id, opponent_id, MyTools.WEIGHTS, true);
+//        	if ( current > bestYet){
+//				bestYet = current;
+//				bestNode = (StateNode)child;
+//			}
+//        }
+//        
+//        //if no child found, loose is guaranteed, just pick firt possible move
+//        if(bestNode == null){
+//        	rootNode.getChildren().get(0);
+//        }
+//        
+//        //System.out.println("Best move has evaluation : " + bestYet);
+//		return bestNode.getMoveFromParent();
 		
 
     }

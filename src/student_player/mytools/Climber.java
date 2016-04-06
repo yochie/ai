@@ -30,9 +30,10 @@ public class Climber {
 //		Answer[][][] tableOutput = new Answer[numStartingPos][numStartingPos][numStartingPos]; 
 		Answer result;
 		
-		Double x1 = 5.0;
-		Double x2 = 3.0;
-		Double x3 = 1.0;
+		//Starting weights
+		Double x1 = 10.0;
+		Double x2 = 0.0;
+		Double x3 = 0.0;
 		
 		result = climb(fn, new Double[] {x1, x2, x3}, stepsize, 0, null);
 		

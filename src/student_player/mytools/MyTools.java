@@ -9,12 +9,16 @@ import java.util.ArrayList;
 
 import autoplay.Autoplay;
 import hus.HusBoardState;
+import hus.HusMove;
 
 public class MyTools {
+	//static variable that holds best move from the top level node when executing EvaluateUtility on root node
+	public static HusMove bestMove = null;
+	
 	
 	//weights that are used by the student player both in performing in actual games and in training
 	//note: generic player has his weights in its own class
-	public static Double[] WEIGHTS = {10.0, 1.0, 0.2};
+	public static Double[] WEIGHTS = {1.0, 0.3, 0.3};
 	
 	public static Double[] BALANCED_WEIGHTS = {1.0, 0.0, 0.0}; /*new Double[MyTools.HEURISTICS.length];
 	static {
@@ -124,7 +128,7 @@ public class MyTools {
 			@Override
 			public double evaluate(Double[] w){
 				//play n games, see who comes out the winner
-				int numIterations = 5;
+				int numIterations = 3;
 				
 				//set static class Weights to those to be tested
 				Double[] weightsBackup = WEIGHTS;
@@ -174,7 +178,11 @@ public class MyTools {
 	
 
     //Returns the estimated utiliy of some state of the game    
-	public static double evaluateUtility(StateNode node, int player_id, int opponent_id, Double[] weights) {
+	public static double evaluateUtility(StateNode node, int player_id, int opponent_id, Double[] weights, boolean firsiteration) {
+		if (firsiteration){
+			//reset static variable to default value in case no move offers better evaluation than min value
+			bestMove = ((StateNode) node.getChildren().get(0)).getMoveFromParent();
+		}
 		//check if node was already evaluated, if so just return that eval
 		if (node.isEvaluated()){
 			return node.getEvaluation();
@@ -189,7 +197,12 @@ public class MyTools {
 			//compute value returned by all heuristics
 			for (int i = 0; i < HEURISTICS.length; i++)
 			{
-				computedHeurisitcs.add(HEURISTICS[i].evaluate(node.getState(), node.isMyturn()));
+				if (weights[i] != 0){
+					computedHeurisitcs.add(HEURISTICS[i].evaluate(node.getState(), node.isMyturn()));
+				}
+				else {
+					computedHeurisitcs.add(0.0);
+				}
 			}
 			
 			//Compute evaluation given weights on each heuristic
@@ -211,9 +224,14 @@ public class MyTools {
 			Double bestYet = -Double.MAX_VALUE;
 			//choose max of children evaluations
 			for (Node<HusBoardState> child : node.getChildren()){
-				Double current = evaluateUtility((StateNode) child, player_id, opponent_id, weights);
+				StateNode husChild = (StateNode) child;
+				Double current = evaluateUtility(husChild, player_id, opponent_id, weights, false);
 				if ( current > bestYet){
 					bestYet = current;
+					if (firsiteration){
+						//set static variable so that Studentplayer can retrieve best move
+						bestMove = husChild.getMoveFromParent();
+					}
 					node.setMinRange(current);
 					if (outsideParentsRange(node)){
 						break;
@@ -227,12 +245,15 @@ public class MyTools {
 		//MIN level node
 		else
 		{
+			
 			Double bestYet = Double.MAX_VALUE;
 			//choose min of children evaluations
 			for (Node<HusBoardState> child : node.getChildren()){
-				Double current = evaluateUtility((StateNode) child, player_id, opponent_id, weights);
+				StateNode husChild = (StateNode) child;
+				Double current = evaluateUtility(husChild, player_id, opponent_id, weights, false);
 				if ( current < bestYet){
 					bestYet = current;
+
 					node.setMaxRange(current);
 					if (outsideParentsRange(node)){
 						break;
@@ -241,19 +262,20 @@ public class MyTools {
 			}
 			node.setEvaluation(bestYet);
 			node.setEvaluated(true);
+
 			return bestYet;
 		}
 	}
 
 	private static boolean outsideParentsRange(StateNode node) {
 		StateNode parent = (StateNode) node.getParent();
-		while (node.getParent() != null){
-			if (node.getRange()[0] > parent.getRange()[1] || node.getRange()[1] < parent.getRange()[0])
+		while (parent != null){
+			if (node.getRange()[0] >= parent.getRange()[1] || node.getRange()[1] <= parent.getRange()[0])
 			{
 				return true;
 			}
-			node = parent;
-			parent = (StateNode) node.getParent();
+			
+			parent = (StateNode) parent.getParent();
 		}
 		return false;
 	}
