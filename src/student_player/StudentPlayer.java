@@ -1,7 +1,6 @@
 package student_player;
 
-import java.util.ArrayList;
-import java.util.Stack;
+import java.io.File;
 
 import hus.HusBoardState;
 import hus.HusMove;
@@ -24,64 +23,39 @@ public class StudentPlayer extends HusPlayer {
      * for another example agent. */
     public HusMove chooseMove(HusBoardState board_state)
     {
-        // Get the legal moves for the current board state.
-        ArrayList<HusMove> moves = null;
         
         //create the starting node for our minimax tree
         StateNode rootNode = new StateNode((HusBoardState) board_state);
         rootNode.setMyturn(true);
         rootNode.setDepth(0);
         
-        //create stack we'll use to do DFS on move space
-        Stack<StateNode> stateStack = new Stack<StateNode>();
+        MyTools.bestMove = null;
         
-        //add root node to stack
-        stateStack.push(rootNode);
+    //FINAL VERSION
+        //Double [] weights = MyTools.MY_PLAYER_WEIGHTS;
+
+    //FOR TESTING DIFFERENT WEIGHTS
+        //TODO : REMOVE FROM FINAL VERSION
+        Double [] weights = new Double[MyTools.HEURISTICS.length];
+    	
+		File file = new File("D:\\Code\\comp424_project\\testingweights.txt");
+		
+		String strw = MyTools.tail(file, 1);
+		
+		String[] split_strw = strw.split(",");
+
+		System.out.println("Finding usigine the folllowing weights read from file: ");
+		for (int i = 0; i < weights.length; i++){
+			weights[i] = Double.parseDouble(split_strw[i]);
+			System.out.println(weights[i]);
+		}
+    	
+
+        MyTools.evaluateUtility(rootNode, player_id, opponent_id, weights);
         
-        StateNode currentNode = null;
-                
-        while (!stateStack.isEmpty()){
-        	//get top node from stack
-        	currentNode = stateStack.pop();
-        	
-        	//get legal moves for its state
-        	moves = currentNode.getState().getLegalMoves();
-        	int currentDepth = currentNode.getDepth();
-        	//if its depth is 4 or more, we'll stop here and calculate its utility based on our heuristic
-        	if ( currentDepth > 4){
-        		currentNode.setLeaf(true);
-        		
-        		//uses static weights from MyTools
-        		//MyTools.evaluateUtility(currentNode, player_id, opponent_id, MyTools.WEIGHTS, false);
-        		//System.out.println(currentNode.getEvaluation());
-        		continue;
-    		}
-        	StateNode newNode = null;
-        	
-        	HusBoardState newState;
-	        //for each possible move
-	        for (HusMove m : moves){
-	        	
-	        	//create state copy
-				newState = (HusBoardState) currentNode.getState().clone();
-	        	
-	        	//do move on that copy
-	        	newState.move(m);
-	        	
-	        	//add new state as child in tree
-	        	newNode = new StateNode(currentNode, newState);
-	        	newNode.setDepth(currentDepth+1);
-	        	newNode.setMyturn(!currentNode.isMyturn());
-	        	newNode.setMoveFromParent(m);
-	        	currentNode.addChild(newNode);
-	        	
-	        	//add to stack
-	        	stateStack.push(newNode);
-	        }
-	        
+        if (MyTools.bestMove == null){
+        	MyTools.bestMove = ((StateNode)rootNode.getChildren().get(0)).getMoveFromParent();
         }
-        
-        MyTools.evaluateUtility(rootNode, player_id, opponent_id, MyTools.MY_PLAYER_WEIGHTS, true);
         
         return MyTools.bestMove;
     }

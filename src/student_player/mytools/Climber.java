@@ -4,21 +4,21 @@ import java.util.Arrays;
 
 public class Climber {
 	//defines how many times the algorithm will iterate if no change in evaluation is made that is superior to minDiff
-	private static int initNumPatienceTokens = 20;
+	private static int initNumPatienceTokens = 3;
 	
 	//defines the minimal absolute difference between two steps so that patience is refreshed
 	private static double minDiff = 0.3;
 	
 	//Starting temperature
-//	private static double startTemp = 100;
+	private static double startTemp = 100;
 	
 	//factor to multiply temperature by at each iteration
-//	private static double alpha = 0.5;
+	private static double alpha = 0.5;
 	
-	private static int min_range = -20;
+	private static int min_range = -100;
 	
 	
-	private static int max_range = 20;
+	private static int max_range = 100;
 	
 	//has to evenly divided max - min ranges
 //	private static int numStartingPos = 5;
@@ -26,16 +26,16 @@ public class Climber {
 	
 	public static void execute(Function fn)
 	{
-		double stepsize = 2;
+		double stepsize = 5;
 //		Answer[][][] tableOutput = new Answer[numStartingPos][numStartingPos][numStartingPos]; 
 		Answer result;
 		
 		//Starting weights
 		Double x1 = 10.0;
-		Double x2 = 0.0;
-		Double x3 = 0.0;
+		Double x2 = 10.0;
+		Double x3 = 10.0;
 		
-		result = climb(fn, new Double[] {x1, x2, x3}, stepsize, 0, null);
+		result = climb(fn, new Double[] {x1, x2, x3}, stepsize, 0, null, initNumPatienceTokens, new Answer({x1, x2, x3}, 0, 0));
 		
 		System.out.println("FOUND OPTIMUM : ");
 		
@@ -45,6 +45,13 @@ public class Climber {
 		System.out.println("with probability of winning: " + result.getY());
 		System.out.println("It took " + result.getI() + " iterations");
 		
+//		result = annealClimb(fn, new Double[] {x1, x2, x3}, stepsize, 0, 5, startTemp, alpha);
+//		for (int i = 0; i <3; i++){
+//			System.out.println(result.getX()[i]);
+//		}
+//		System.out.println("with probability of winning: " + result.getY());
+//		System.out.println("It took " + result.getI() + " iterations");
+
 //		for (double x1 = min_range; x1 < max_range; x1+= (max_range - min_range)/numStartingPos) {
 //			for (double x2 = min_range; x2 < max_range; x2+= (max_range - min_range)/numStartingPos) {
 //				for (double x3 = min_range; x3 < max_range; x3+= (max_range - min_range)/numStartingPos) {
@@ -232,18 +239,21 @@ public class Climber {
 		return newX;
 	}
 
-	private static Answer climb(Function fn, Double[] x, double stepsize, int iteration, Double currentEval)
+	private static Answer climb(Function fn, Double[] x, double stepsize, int iteration, Double currentEval, int patience, Answer bestYet)
 	{
 		if (currentEval == null){
 			currentEval = fn.evaluate(x);
 		}
 		iteration++;
 		
+		//remembers which parameters we tried changing
+		boolean changedParam[] = {false, false, false};
 
 		//roll dice to decide which which parameter to change
 		double rand_1 = Math.random() * 100;
 		
 		int paramToChange = (int) (rand_1 / (100.0/x.length));
+		changedParam[paramToChange] = true;
 		
 		double partialLeftX;
 		double partialRightX;
@@ -273,10 +283,10 @@ public class Climber {
 				//roll dice to decide which way to go so as to avoid direction bias
 				double rand = Math.random() * 100;
 				if (rand < 50){
-					return climb (fn, leftX, stepsize, iteration, leftEval);
+					return climb (fn, leftX, stepsize/2, iteration, leftEval, initNumPatienceTokens, new Answer(leftX, leftEval, iteration));
 				}
 				else {
-					return climb (fn, rightX, stepsize, iteration, rightEval);
+					return climb (fn, rightX, stepsize/2, iteration, rightEval, initNumPatienceTokens, new Answer(rightX, rightEval, iteration));
 				}
 			}
 			else
@@ -284,38 +294,66 @@ public class Climber {
 				//left is better than current and right
 				if (leftEval > currentEval && leftEval > rightEval)
 				{
-					return climb (fn, leftX, stepsize, iteration, leftEval);
+					return climb (fn, leftX, stepsize/2, iteration, leftEval, initNumPatienceTokens, new Answer(leftX, leftEval, iteration));
 				}
 				//right is better than current and left
 				else if (rightEval > currentEval && leftEval < rightEval)
 				{
-					return climb (fn, rightX, stepsize, iteration, rightEval);
+					return climb (fn, leftX, stepsize/2, iteration, leftEval, initNumPatienceTokens, new Answer(leftX, leftEval, iteration));
 				}
 				//current is better than (or equal to) both
 				else
 				{
-					double rand_2 = Math.random() * 100;
 					//try changing other parameters
 					switch (paramToChange) {
 		            	case 0:  
-		            		paramToChange = 1 + (int) (rand_2 / (100.0/(x.length -1)));
+		            		if (!changedParam[1]){
+		            			//try changing second param
+			            		paramToChange = 1;
+
+		            		}
+		            		else {
+		            			//try changing third param
+		            			paramToChange = 2;
+		            		}
+
 		                     break;	
-		            	case 1:  
-		            		paramToChange = (int) (rand_2 / (100.0/(x.length -1)));
-		            		if (paramToChange == 1) {paramToChange++;}
+		            	case 1:  		            		
+		            		if (!changedParam[0]){
+		            			//try changing second param
+		            			paramToChange = 0;
+
+		            		}
+		            		else {
+		            			//try changing third param
+		            			paramToChange = 2;
+		            		}
+		            		
 		                     break;
 		            	case 2:  
-		            		paramToChange = (int) (rand_2 / (100.0/(x.length -1)));
-		            		if (paramToChange == 2) {paramToChange--;}	            		
+		            		if (!changedParam[0]){
+		            			//try changing second param
+			            		paramToChange = 0;
+
+			            		}
+			            		else {
+			            			//try changing third param
+			            			paramToChange = 1;
+			            		}         		
 		                     break;
 					}
 				}
 			}
 		}
-		
-		Answer ans = new Answer(x, currentEval, iteration);
-		
-		return ans;
+		patience--;
+		if (patience == 0){
+			return bestYet;
+
+		}
+		else{			
+			
+			return climb (fn, x, stepsize*2, iteration, currentEval, patience - 1, bestYet);
+		}
 	}
 	
 	

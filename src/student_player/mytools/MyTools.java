@@ -15,10 +15,14 @@ public class MyTools {
 	//static variable that holds best move from the top level node when executing EvaluateUtility on root node
 	public static HusMove bestMove = null;
 	
+	//defines maximum min-max tree depth
+	private static final int MAX_DEPTH = 4;
+	
+	protected static final int NUM_GAMES_SIMULATED = 10;	
 	
 	//weights that are used by the student player both in performing in actual games and in training
 	//note: generic player has his weights in its own class
-	public static Double[] MY_PLAYER_WEIGHTS = {1.0, 0.3, 0.3};
+	public static Double[] MY_PLAYER_WEIGHTS = {10.0, 1.0, 1.0};
 	
 	public static Double[] BALANCED_WEIGHTS = {1.0, 0.0, 0.0}; /*new Double[MyTools.HEURISTICS.length];
 	static {
@@ -50,9 +54,6 @@ public class MyTools {
 					int op_num = sum(op_pits);
 					double h1 = my_num - op_num;
 					
-					//Normalize heuristic by dividng by its maximum theoretical value to get a number 0<h1<1
-					h1 /= 96;
-					
 					return h1;				}
 			},	
 			
@@ -79,7 +80,7 @@ public class MyTools {
 					//return negative number total of stones
 					//divided by 10 to normalize somewhat
 					//this is sort of abritrary, but should help balance heuristic so that it is closer to 1 
-					return (double) -numStones/10.0;
+					return (double) -numStones;
 				}
 			},
 			//Third heuristic : maximize number of protected pits on my side
@@ -97,45 +98,54 @@ public class MyTools {
 						my_pits = pits[(state.getTurnPlayer() + 1) % 2];
 					}
 					
-					double hidden = 0;
-					
-					for (int i = HusBoardState.BOARD_WIDTH; i <= (HusBoardState.BOARD_WIDTH * 2) - 1; i++){
+					int hidden = 0;
+					int maxPit = (HusBoardState.BOARD_WIDTH * 2) - 1;
+					for (int i = HusBoardState.BOARD_WIDTH; i <= maxPit; i++){
 						if (my_pits[i] == 0){
 							hidden += my_pits[HusBoardState.BOARD_WIDTH - (i - HusBoardState.BOARD_WIDTH )];
 						}
 					}
 					
 					//Again, normalize before returning by a somewhat arbitrary factor so that we are closer to 1
-					return hidden/15.0;
+					return (double) hidden;
 				}
 			}
 	};
-	
-	
+
+
 	//tests different weight values and uses hill climbing to optimize
 	public static void main(String args[]){
 		
-		Double [] weights = new Double[HEURISTICS.length];
+//		Double [] weights = new Double[HEURISTICS.length];
 		
-		//initialize weights so that they add up to 1
-		for (int i = 0; i < HEURISTICS.length; i++)
-		{
-			weights[i] = 1.0;//(Double) (1.0/HEURISTICS.length);
-		}
+//		//initialize weights so that they add up to 1
+//		for (int i = 0; i < HEURISTICS.length; i++)
+//		{
+//			weights[i] = 1.0;//(Double) (1.0/HEURISTICS.length);
+//		}
 		
 		//Evaluation function for hill climbing, returns probability of win for given weight setup
 		Function evalFunction = new Function(){
 			@Override
 			public double evaluate(Double[] w){
 				//play n games, see who comes out the winner
-				int numIterations = 5;
+				int numIterations = NUM_GAMES_SIMULATED;
 				
 				//set static class Weights to those to be tested
-				Double[] weightsBackup = MY_PLAYER_WEIGHTS;
 				
-				MY_PLAYER_WEIGHTS = w;
+
 				String[] argForAutoplay = {Integer.toString(numIterations)};
-				Autoplay.main(argForAutoplay); 
+				
+				String strw = w[0].toString() + "," + w[1].toString() +"," + w[2].toString() + "\n";
+				System.out.println(strw + " Written to file");
+				try {
+				    Files.write(Paths.get("D:\\Code\\comp424_project\\testingweights.txt"), strw.getBytes());
+				}catch (IOException e) {
+					e.printStackTrace();
+				}
+
+				
+				Autoplay.main(argForAutoplay);
 				
 				//open log file and read last n lines, count number of wins
 				int numWins = 0;			
@@ -157,13 +167,12 @@ public class MyTools {
 						numWins++;
 					}
 				}
-				MY_PLAYER_WEIGHTS = weightsBackup;
 				
 				String line1 ="Evaluated win rate for weights: " + w[0].toString() + ", " + w[1].toString() +", " + w[2].toString() + " won  " + numWins + " out of " + numIterations + "\n";
 				try {
 				    Files.write(Paths.get("myownlog.txt"), line1.getBytes(), StandardOpenOption.APPEND);
 				}catch (IOException e) {
-				    //exception handling left as an exercise for the reader
+					e.printStackTrace();				
 				}
 				
 				System.out.println("Evaluated win rate for weights: " + w[0].toString() + ", " + w[1].toString() +", " + w[2].toString() + " won  " + numWins + " out of " + numIterations);
@@ -178,19 +187,15 @@ public class MyTools {
 	
 
     //Returns the estimated utiliy of some state of the game    
-	public static double evaluateUtility(StateNode node, int player_id, int opponent_id, Double[] weights, boolean firsiteration) {
-		if (firsiteration){
-			//reset static variable to default value in case no move offers better evaluation than min value
-			bestMove = ((StateNode) node.getChildren().get(0)).getMoveFromParent();
-		}
-		
-		//check if node was already evaluated, if so just return that eval
-		if (node.isEvaluated()){
-			return node.getEvaluation();
-		}
-		
-		//calculate evaluation using heuristic (we won't be going any further into the tree)
-		if (node.isLeaf()){
+	public static double evaluateUtility(StateNode currentNode, int player_id, int opponent_id, Double[] weights) {
+    	int currentDepth = currentNode.getDepth();
+
+		//get legal moves for this state
+		 ArrayList<HusMove> moves = currentNode.getState().getLegalMoves();
+    	
+    	//if its depth is 5 or more, we'll stop here and calculate its utility based on our heuristic
+    	if ( currentDepth >= MAX_DEPTH){
+    		currentNode.setLeaf(true);
 			
 			//list of values returned by heuristics for the given state
 			ArrayList<Double> computedHeurisitcs = new ArrayList<Double>();
@@ -199,7 +204,8 @@ public class MyTools {
 			for (int i = 0; i < HEURISTICS.length; i++)
 			{
 				if (weights[i] != 0){
-					computedHeurisitcs.add(HEURISTICS[i].evaluate(node.getState(), node.isMyturn()));
+					computedHeurisitcs.add(HEURISTICS[i].evaluate(currentNode.getState(), currentNode.isMyturn()));
+					//System.out.println("Heuristic # " + i + " evaluated to " + computedHeurisitcs.get(i));
 				}
 				else {
 					computedHeurisitcs.add(0.0);
@@ -215,58 +221,90 @@ public class MyTools {
 				counter++;
 			}
 			
-			node.setEvaluation(evaluation);
-			node.setEvaluated(true);
+			currentNode.setEvaluation(evaluation);
+			currentNode.setEvaluated(true);
 			return evaluation;
 		}
-		//MAX level node
-		else if (node.isMyturn())
-		{
-			Double bestYet = -Double.MAX_VALUE;
-			Double current = null;
-			//choose max of children evaluations
-			for (Node<HusBoardState> child : node.getChildren()){
-				StateNode husChild = (StateNode) child;
-				current = evaluateUtility(husChild, player_id, opponent_id, weights, false);
-				if ( current > bestYet){
-					bestYet = current;
-					if (firsiteration){
-						//set static variable so that Studentplayer can retrieve best move
-						bestMove = husChild.getMoveFromParent();
-					}
-					node.setMinRange(current);
-					if (outsideParentsRange(node)){
-						break;
-					}
-				}
-			}
-			node.setEvaluation(bestYet);
-			node.setEvaluated(true);
-			return bestYet;
-		}
-		//MIN level node
-		else
-		{
+    	
+		else{ 
+			StateNode newNode = null;
+	    	
+	    	HusBoardState newState;
 			
-			Double bestYet = Double.MAX_VALUE;
-			Double current = null;
-			//choose min of children evaluations
-			for (Node<HusBoardState> child : node.getChildren()){
-				StateNode husChild = (StateNode) child;
-				current = evaluateUtility(husChild, player_id, opponent_id, weights, false);
-				if ( current < bestYet){
-					bestYet = current;
+	    	Double newChildEval = null;
 
-					node.setMaxRange(current);
-					if (outsideParentsRange(node)){
-						break;
+	    	//MAX level node
+			if (currentNode.isMyturn())
+			{
+				Double bestYet = -Double.MAX_VALUE;
+				
+				//choose max of children evaluations
+				for (HusMove m : moves){
+		        	//create state copy
+					newState = (HusBoardState) currentNode.getState().clone();
+		        	
+		        	//do move on that copy
+		        	newState.move(m);
+		        	
+		        	//add new state as child in tree
+		        	newNode = new StateNode(currentNode, newState);
+		        	newNode.setDepth(currentDepth+1);
+		        	newNode.setMyturn(!currentNode.isMyturn());
+		        	newNode.setMoveFromParent(m);
+		        	currentNode.addChild(newNode);
+					
+					newChildEval = evaluateUtility(newNode, player_id, opponent_id, weights);
+					if ( newChildEval > bestYet){
+						bestYet = newChildEval;
+						if (currentDepth == 0){
+							//set static variable so that Studentplayer can retrieve best move
+							bestMove = newNode.getMoveFromParent();
+						}
+						currentNode.setMinRange(newChildEval);
+						if (outsideParentsRange(currentNode)){
+							break;
+						}
 					}
 				}
+				currentNode.setEvaluation(bestYet);
+				currentNode.setEvaluated(true);
+				return bestYet;
 			}
-			node.setEvaluation(bestYet);
-			node.setEvaluated(true);
-
-			return bestYet;
+			//MIN level node
+			else
+			{
+				//init iterators
+				Double bestYet = Double.MAX_VALUE;
+				
+				//choose min of children evaluations
+				for (HusMove m : moves){
+		        	//create state copy
+					newState = (HusBoardState) currentNode.getState().clone();
+		        	
+		        	//do move on that copy
+		        	newState.move(m);
+		        	
+		        	//add new state as child in tree
+		        	newNode = new StateNode(currentNode, newState);
+		        	newNode.setDepth(currentDepth+1);
+		        	newNode.setMyturn(!currentNode.isMyturn());
+		        	newNode.setMoveFromParent(m);
+		        	currentNode.addChild(newNode);
+					
+					newChildEval = evaluateUtility(newNode, player_id, opponent_id, weights);
+					if ( newChildEval < bestYet){
+						bestYet = newChildEval;
+						currentNode.setMaxRange(newChildEval);
+						if (outsideParentsRange(currentNode)){
+							break;
+						}
+					}
+				}
+				currentNode.setEvaluation(bestYet);
+				currentNode.setEvaluated(true);
+				return bestYet;
+			
+			}
 		}
 	}
 
