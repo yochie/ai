@@ -7,9 +7,8 @@ import hus.HusMove;
 import hus.HusPlayer;
 
 /** A Hus player used to compare my player to
- * uses a uniformly balanced weight function */
+ * uses only the first heuristic function */
 public class BalancedPlayer extends HusPlayer {
-	
 
     public BalancedPlayer() { super("balancedPlayer"); }
     
@@ -28,13 +27,15 @@ public class BalancedPlayer extends HusPlayer {
         	MyTools.bestMove = ((StateNode)rootNode.getChildren().get(0)).getMoveFromParent();
         }
         
-        //choose one of the best three moves
+        //choose one of the best three moves (if less than three available then scale random function down appropriately
         int index;
         Random r = new Random();
         if (MyTools.bestMoves.size() >= 2){
 			index = r.nextInt(2);
         }
         else {	index = r.nextInt(MyTools.bestMoves.size());}
+        
+        //set default value in case there are no available moves (shouldn't happen)
         MoveEvalTuple toreturn = MyTools.bestMoves.peek();
         
         //choose one of the best three moves
@@ -45,6 +46,8 @@ public class BalancedPlayer extends HusPlayer {
         
         //refresh bestmoves for next time
         MyTools.bestMoves.clear();
+        
+        
         return toreturn.move;
         
     }

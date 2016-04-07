@@ -17,6 +17,8 @@ public class MyTools {
 	//static variable that holds best move from the top level node when executing EvaluateUtility on root node
 	public static HusMove bestMove = null;
 	
+	
+	//Holds possible moves from rootnode, orders them so that one with best evaluation comes out first 
 	public static PriorityQueue<MoveEvalTuple> bestMoves = new PriorityQueue<MoveEvalTuple>(24, 
 			new Comparator<MoveEvalTuple>(){
 
@@ -37,22 +39,21 @@ public class MyTools {
 	
 	
 	//defines maximum min-max tree depth
-	private static final int MAX_DEPTH = 4;
+	private static final int MAX_DEPTH = 5;
 	
+	//How many games to simulate when evaluating some weight configuration during climbing algorithm
 	protected static final int NUM_GAMES_SIMULATED = 10;	
 	
-	//weights that are used by the student player both in performing in actual games and in training
-	//note: generic player has his weights in its own class
+	//weights that are used by the student player 
 	public static Double[] MY_PLAYER_WEIGHTS = {12.5, 12.5, 5.0};
 	
-	public static Double[] BALANCED_WEIGHTS = {1.0, 0.0, 0.0}; /*new Double[MyTools.HEURISTICS.length];
-	static {
-		for (int i =0; i< WEIGHTS.length; i++){
-			WEIGHTS[i] = (Double) 1.0/WEIGHTS.length;
-		}
-	}
-	*/
+	//Weights used by balancedPlayer during climbing alrgorithm
+	public static Double[] BALANCED_WEIGHTS = {1.0, 0.0, 0.0}; 
+
+	//Set of heuristics that we will try to balance
+	//note: they return values of somewhat arbitrary magnitude, so weights will have to compensate
 	public static final Heuristic[] HEURISTICS = {
+			
 			//First heuristic: maximize number of stones in my pits - number of stones in opponent's pits
 			new Heuristic(){
 				@Override
@@ -75,7 +76,8 @@ public class MyTools {
 					int op_num = sum(op_pits);
 					double h1 = my_num - op_num;
 					
-					return h1;				}
+					return h1;				
+				}
 			},	
 			
 			//Second heuristic : minimize number of stones that opponent has in rightmost portion of his front row.
@@ -99,8 +101,6 @@ public class MyTools {
 					}
 					
 					//return negative number total of stones
-					//divided by 10 to normalize somewhat
-					//this is sort of abritrary, but should help balance heuristic so that it is closer to 1 
 					return (double) -numStones;
 				}
 			},
@@ -127,7 +127,6 @@ public class MyTools {
 						}
 					}
 					
-					//Again, normalize before returning by a somewhat arbitrary factor so that we are closer to 1
 					return (double) hidden;
 				}
 			}
@@ -135,15 +134,8 @@ public class MyTools {
 
 
 	//tests different weight values and uses hill climbing to optimize
+	//not used for actual competition
 	public static void main(String args[]){
-		
-//		Double [] weights = new Double[HEURISTICS.length];
-		
-//		//initialize weights so that they add up to 1
-//		for (int i = 0; i < HEURISTICS.length; i++)
-//		{
-//			weights[i] = 1.0;//(Double) (1.0/HEURISTICS.length);
-//		}
 		
 		//Evaluation function for hill climbing, returns probability of win for given weight setup
 		Function evalFunction = new Function(){
@@ -207,7 +199,8 @@ public class MyTools {
 	}
 	
 
-    //Returns the estimated utiliy of some state of the game    
+    //Returns the estimated utiliy of some state of the game
+	//Side effect: fills static class list of bestMoves for first given node, also sets  bestMove
 	public static double evaluateUtility(StateNode currentNode, int player_id, int opponent_id, Double[] weights) {
     	int currentDepth = currentNode.getDepth();
 
@@ -275,7 +268,11 @@ public class MyTools {
 		        	currentNode.addChild(newNode);
 					
 					newChildEval = evaluateUtility(newNode, player_id, opponent_id, weights);
+					
+					//If we are in rootnode
+					//note: rootnode is always a max node
 					if (currentDepth == 0){
+						//add move to list along with its evaluation
 						bestMoves.add(new MoveEvalTuple(m, newChildEval));
 					}
 					if ( newChildEval > bestYet){
@@ -285,6 +282,9 @@ public class MyTools {
 							bestMove = m;
 						}
 						currentNode.setMinRange(newChildEval);
+						
+						//if outside range of parents, stop looking through this nodes children
+						//and just return current value (not important since we wont be using it)
 						if (outsideParentsRange(currentNode)){
 							break;
 						}

@@ -36,39 +36,39 @@ public class StudentPlayer extends HusPlayer {
         MyTools.bestMove = null;
         
     //FINAL VERSION
-        //Double [] weights = MyTools.MY_PLAYER_WEIGHTS;
+        Double [] weights = MyTools.MY_PLAYER_WEIGHTS;
 
-    //FOR TESTING DIFFERENT WEIGHTS
-        //TODO : REMOVE FROM FINAL VERSION
-        Double [] weights = new Double[MyTools.HEURISTICS.length];
+//    //FOR TESTING DIFFERENT WEIGHTS
+//        //TODO : REMOVE FROM FINAL VERSION
+//        Double [] weights = new Double[MyTools.HEURISTICS.length];
+//    	
+//		File file = new File("D:\\Code\\comp424_project\\testingweights.txt");
+//		
+//		String strw = MyTools.tail(file, 1);
+//		
+//		String[] split_strw = strw.split(",");
+//
+//		System.out.println("Finding usigine the folllowing weights read from file: ");
+//		for (int i = 0; i < weights.length; i++){
+//			weights[i] = Double.parseDouble(split_strw[i]);
+//			System.out.println(weights[i]);
+//		}
     	
-		File file = new File("D:\\Code\\comp424_project\\testingweights.txt");
-		
-		String strw = MyTools.tail(file, 1);
-		
-		String[] split_strw = strw.split(",");
-
-		System.out.println("Finding usigine the folllowing weights read from file: ");
-		for (int i = 0; i < weights.length; i++){
-			weights[i] = Double.parseDouble(split_strw[i]);
-			System.out.println(weights[i]);
-		}
-    	
-
+        //run the evaluation algorithm over the min max tree, will return max evaluation, and set static variable bestMove with 
+        //the best move as well as fill an ordered by evaluation priority queue of the available moves 
+        //This (pretty akward) method works this way to simplify the recursions 
         MyTools.evaluateUtility(rootNode, player_id, opponent_id, weights);
         
-        if (MyTools.bestMove == null){
-        	MyTools.bestMove = ((StateNode)rootNode.getChildren().get(0)).getMoveFromParent();
-        }
-                
-        
-      //choose one of the best three moves
+        //choose one of the best three moves
+        //useful for running simulations and accounting for variations in the opponents strategy
         int index;
         Random r = new Random();
         if (MyTools.bestMoves.size() >= 2){
 			index = r.nextInt(2);
         }
         else {	index = r.nextInt(MyTools.bestMoves.size());}
+        
+        //by default return first available move
         MoveEvalTuple toreturn = MyTools.bestMoves.peek();
         
         //choose one of the best three moves
@@ -79,6 +79,8 @@ public class StudentPlayer extends HusPlayer {
         
         //refresh bestmoves for next time
         MyTools.bestMoves.clear();
+        
+        
         return toreturn.move;
     }
 
