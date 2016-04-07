@@ -37,13 +37,13 @@ public class MyTools {
 	
 	
 	//defines maximum min-max tree depth
-	private static final int MAX_DEPTH = 5;
+	private static final int MAX_DEPTH = 4;
 	
-	protected static final int NUM_GAMES_SIMULATED = 2;	
+	protected static final int NUM_GAMES_SIMULATED = 10;	
 	
 	//weights that are used by the student player both in performing in actual games and in training
 	//note: generic player has his weights in its own class
-	public static Double[] MY_PLAYER_WEIGHTS = {10.0, 1.0, 1.0};
+	public static Double[] MY_PLAYER_WEIGHTS = {12.5, 12.5, 5.0};
 	
 	public static Double[] BALANCED_WEIGHTS = {1.0, 0.0, 0.0}; /*new Double[MyTools.HEURISTICS.length];
 	static {

@@ -1,5 +1,7 @@
 package student_player.mytools;
 
+import java.util.Random;
+
 import hus.HusBoardState;
 import hus.HusMove;
 import hus.HusPlayer;
@@ -26,8 +28,25 @@ public class BalancedPlayer extends HusPlayer {
         	MyTools.bestMove = ((StateNode)rootNode.getChildren().get(0)).getMoveFromParent();
         }
         
+        //choose one of the best three moves
+        int index;
+        Random r = new Random();
+        if (MyTools.bestMoves.size() >= 2){
+			index = r.nextInt(2);
+        }
+        else {	index = r.nextInt(MyTools.bestMoves.size());}
+        MoveEvalTuple toreturn = MyTools.bestMoves.peek();
         
-        return MyTools.bestMove;
+        //choose one of the best three moves
+        for (int i = 0; i <= index; i++){
+        	toreturn =  MyTools.bestMoves.remove();
+        	
+        }
+        
+        //refresh bestmoves for next time
+        MyTools.bestMoves.clear();
+        return toreturn.move;
+        
     }
 	
 }

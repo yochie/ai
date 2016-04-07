@@ -35,7 +35,7 @@ public class Climber {
 		Double x2 = 10.0;
 		Double x3 = 10.0;
 		
-		result = climb(fn, new Double[] {x1, x2, x3}, stepsize, 0, null, initNumPatienceTokens, new Answer(new Double[] {x1, x2, x3}, 0, 0));
+		result = climb(fn, new Double[] {x1, x2, x3}, stepsize, -1, null, initNumPatienceTokens);
 		
 		System.out.println("FOUND OPTIMUM : ");
 		
@@ -85,6 +85,7 @@ public class Climber {
 		
 	}
 	
+	@SuppressWarnings("unused")
 	private static Answer annealClimb(Function fn, Double x[], double stepsize, int iteration, int patienceTokens, double temp, double tReductionFactor)
 	{
 		double currentEval = fn.evaluate(x);
@@ -239,7 +240,7 @@ public class Climber {
 		return newX;
 	}
 
-	private static Answer climb(Function fn, Double[] x, double stepsize, int iteration, Double currentEval, int patience, Answer bestYet)
+	private static Answer climb(Function fn, Double[] x, double stepsize, int iteration, Double currentEval, int patience)
 	{
 		if (currentEval == null){
 			currentEval = fn.evaluate(x);
@@ -283,10 +284,10 @@ public class Climber {
 				//roll dice to decide which way to go so as to avoid direction bias
 				double rand = Math.random() * 100;
 				if (rand < 50){
-					return climb (fn, leftX, stepsize/2, iteration, leftEval, initNumPatienceTokens, new Answer(leftX, leftEval, iteration));
+					return climb (fn, leftX, stepsize/2, iteration, leftEval, initNumPatienceTokens);
 				}
 				else {
-					return climb (fn, rightX, stepsize/2, iteration, rightEval, initNumPatienceTokens, new Answer(rightX, rightEval, iteration));
+					return climb (fn, rightX, stepsize/2, iteration, rightEval, initNumPatienceTokens);
 				}
 			}
 			else
@@ -294,12 +295,12 @@ public class Climber {
 				//left is better than current and right
 				if (leftEval > currentEval && leftEval > rightEval)
 				{
-					return climb (fn, leftX, stepsize/2, iteration, leftEval, initNumPatienceTokens, new Answer(leftX, leftEval, iteration));
+					return climb (fn, leftX, stepsize/2, iteration, leftEval, initNumPatienceTokens);
 				}
 				//right is better than current and left
 				else if (rightEval > currentEval && leftEval < rightEval)
 				{
-					return climb (fn, leftX, stepsize/2, iteration, leftEval, initNumPatienceTokens, new Answer(leftX, leftEval, iteration));
+					return climb (fn, rightX, stepsize/2, iteration, rightEval, initNumPatienceTokens);
 				}
 				//current is better than (or equal to) both
 				else
@@ -347,12 +348,12 @@ public class Climber {
 		}
 		patience--;
 		if (patience == 0){
-			return bestYet;
+			 return new Answer(x, currentEval, iteration);
 
 		}
 		else{			
 			
-			return climb (fn, x, stepsize*2, iteration, currentEval, patience - 1, bestYet);
+			return climb (fn, x, stepsize*2, iteration, currentEval, patience - 1);
 		}
 	}
 	

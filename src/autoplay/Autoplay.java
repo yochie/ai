@@ -53,7 +53,7 @@ public class Autoplay
 //                "java", "-cp", "bin", "-Xms520m", "-Xmx520m", "boardgame.Client", "hus.RandomHusPlayer");
             client2_pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
 
-            for (int i=0; i < n_games; i++) {
+            for (int i=0; i < 20; i++){//n_games; i++) {
                 System.out.println("Game "+i);
 
                 try {
