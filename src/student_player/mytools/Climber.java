@@ -4,15 +4,15 @@ import java.util.Arrays;
 
 public class Climber {
 	//defines how many times the algorithm will iterate if no change in evaluation is made
-	private static int initNumPatienceTokens = 3;
+	private static int initNumPatienceTokens = 5;
 
-	private static int min_range = -100;
+	private static int min_range = -1000;
 	
-	private static int max_range = 100;
+	private static int max_range = 1000;
 	
 	public static void execute(Function fn)
 	{
-		double stepsize = 5;
+		double stepsize = 10;
 		Answer result;
 		
 		//Starting weights

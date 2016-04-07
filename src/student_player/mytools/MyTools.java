@@ -19,7 +19,7 @@ public class MyTools {
 	
 	
 	//Holds possible moves from rootnode, orders them so that one with best evaluation comes out first 
-	public static PriorityQueue<MoveEvalTuple> bestMoves = new PriorityQueue<MoveEvalTuple>(24, 
+	public static PriorityQueue<MoveEvalTuple> bestMoves = new PriorityQueue<MoveEvalTuple>(32, 
 			new Comparator<MoveEvalTuple>(){
 
 				@Override
@@ -42,13 +42,13 @@ public class MyTools {
 	private static final int MAX_DEPTH = 5;
 	
 	//How many games to simulate when evaluating some weight configuration during climbing algorithm
-	protected static final int NUM_GAMES_SIMULATED = 10;	
+	protected static final int NUM_GAMES_SIMULATED = 5;	
 	
 	//weights that are used by the student player 
 	public static Double[] MY_PLAYER_WEIGHTS = {12.5, 12.5, 5.0};
 	
 	//Weights used by balancedPlayer during climbing alrgorithm
-	public static Double[] BALANCED_WEIGHTS = {1.0, 0.0, 0.0}; 
+	public static Double[] BALANCED_WEIGHTS = {10.0, 0.0, 0.0}; 
 
 	//Set of heuristics that we will try to balance
 	//note: they return values of somewhat arbitrary magnitude, so weights will have to compensate

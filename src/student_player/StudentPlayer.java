@@ -59,29 +59,37 @@ public class StudentPlayer extends HusPlayer {
         //This (pretty akward) method works this way to simplify the recursions 
         MyTools.evaluateUtility(rootNode, player_id, opponent_id, weights);
         
+        //in case there was no move that didn't guarantee failure, just return first move
+        if (MyTools.bestMove == null){
+        	MyTools.bestMove = ((StateNode)rootNode.getChildren().get(0)).getMoveFromParent();
+        }
+        
+        //Return best move
+        return MyTools.bestMove;
+        
         //choose one of the best three moves
         //useful for running simulations and accounting for variations in the opponents strategy
-        int index;
-        Random r = new Random();
-        if (MyTools.bestMoves.size() >= 2){
-			index = r.nextInt(2);
-        }
-        else {	index = r.nextInt(MyTools.bestMoves.size());}
-        
-        //by default return first available move
-        MoveEvalTuple toreturn = MyTools.bestMoves.peek();
-        
-        //choose one of the best three moves
-        for (int i = 0; i <= index; i++){
-        	toreturn =  MyTools.bestMoves.remove();
-        	
-        }
-        
-        //refresh bestmoves for next time
-        MyTools.bestMoves.clear();
-        
-        
-        return toreturn.move;
+//        int index;
+//        Random r = new Random();
+//        if (MyTools.bestMoves.size() >= 3){
+//			index = r.nextInt(3);
+//        }
+//        else {	index = r.nextInt(MyTools.bestMoves.size());}
+//        
+//        //by default return first available move
+//        MoveEvalTuple toreturn = MyTools.bestMoves.peek();
+//        
+//        //choose one of the best three moves
+//        for (int i = 0; i <= index; i++){
+//        	toreturn =  MyTools.bestMoves.remove();
+//        	
+//        }
+//        
+//        //refresh bestmoves for next time
+//        MyTools.bestMoves.clear();
+//        
+//        
+//        return toreturn.move;
     }
 
 }
