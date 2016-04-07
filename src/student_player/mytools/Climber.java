@@ -35,7 +35,7 @@ public class Climber {
 		Double x2 = 10.0;
 		Double x3 = 10.0;
 		
-		result = climb(fn, new Double[] {x1, x2, x3}, stepsize, 0, null, initNumPatienceTokens, new Answer({x1, x2, x3}, 0, 0));
+		result = climb(fn, new Double[] {x1, x2, x3}, stepsize, 0, null, initNumPatienceTokens, new Answer(new Double[] {x1, x2, x3}, 0, 0));
 		
 		System.out.println("FOUND OPTIMUM : ");
 		

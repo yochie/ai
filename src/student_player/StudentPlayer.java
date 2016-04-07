@@ -1,10 +1,14 @@
 package student_player;
 
 import java.io.File;
+import java.util.Comparator;
+import java.util.PriorityQueue;
+import java.util.Random;
 
 import hus.HusBoardState;
 import hus.HusMove;
 import hus.HusPlayer;
+import student_player.mytools.MoveEvalTuple;
 import student_player.mytools.MyTools;
 import student_player.mytools.StateNode;
 
@@ -56,8 +60,26 @@ public class StudentPlayer extends HusPlayer {
         if (MyTools.bestMove == null){
         	MyTools.bestMove = ((StateNode)rootNode.getChildren().get(0)).getMoveFromParent();
         }
+                
         
-        return MyTools.bestMove;
+      //choose one of the best three moves
+        int index;
+        Random r = new Random();
+        if (MyTools.bestMoves.size() >= 2){
+			index = r.nextInt(2);
+        }
+        else {	index = r.nextInt(MyTools.bestMoves.size());}
+        MoveEvalTuple toreturn = MyTools.bestMoves.peek();
+        
+        //choose one of the best three moves
+        for (int i = 0; i <= index; i++){
+        	toreturn =  MyTools.bestMoves.remove();
+        	
+        }
+        
+        //refresh bestmoves for next time
+        MyTools.bestMoves.clear();
+        return toreturn.move;
     }
 
 }

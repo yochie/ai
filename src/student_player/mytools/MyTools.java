@@ -6,6 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 
 import autoplay.Autoplay;
 import hus.HusBoardState;
@@ -15,10 +17,29 @@ public class MyTools {
 	//static variable that holds best move from the top level node when executing EvaluateUtility on root node
 	public static HusMove bestMove = null;
 	
-	//defines maximum min-max tree depth
-	private static final int MAX_DEPTH = 4;
+	public static PriorityQueue<MoveEvalTuple> bestMoves = new PriorityQueue<MoveEvalTuple>(24, 
+			new Comparator<MoveEvalTuple>(){
+
+				@Override
+				public int compare(MoveEvalTuple o1, MoveEvalTuple o2) {
+					if (o1.eval < o2.eval ){
+						return 1;
+					}
+					else if (o1.eval == o2.eval){
+						return 0;
+					}
+					else{					
+						return -1 ;
+					}
+				}
+		
+	});
 	
-	protected static final int NUM_GAMES_SIMULATED = 10;	
+	
+	//defines maximum min-max tree depth
+	private static final int MAX_DEPTH = 5;
+	
+	protected static final int NUM_GAMES_SIMULATED = 2;	
 	
 	//weights that are used by the student player both in performing in actual games and in training
 	//note: generic player has his weights in its own class
@@ -254,11 +275,14 @@ public class MyTools {
 		        	currentNode.addChild(newNode);
 					
 					newChildEval = evaluateUtility(newNode, player_id, opponent_id, weights);
+					if (currentDepth == 0){
+						bestMoves.add(new MoveEvalTuple(m, newChildEval));
+					}
 					if ( newChildEval > bestYet){
 						bestYet = newChildEval;
 						if (currentDepth == 0){
 							//set static variable so that Studentplayer can retrieve best move
-							bestMove = newNode.getMoveFromParent();
+							bestMove = m;
 						}
 						currentNode.setMinRange(newChildEval);
 						if (outsideParentsRange(currentNode)){
